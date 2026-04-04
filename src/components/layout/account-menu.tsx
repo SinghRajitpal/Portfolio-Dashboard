@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes"
 import { Moon, Sun, ChevronDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { SignOutButton } from "@/components/auth/sign-out-button"
+import { cn } from "@/lib/utils"
 
 interface AccountMenuProps {
   email?: string
@@ -21,11 +22,15 @@ export function AccountMenu({ email }: AccountMenuProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <Button variant="ghost" size="sm" className="gap-1 text-xs font-normal">
-          {email ?? "Account"}
-          <ChevronDown className="size-3 opacity-60" />
-        </Button>
+      <DropdownMenuTrigger
+        className={cn(
+          buttonVariants({ variant: "ghost", size: "sm" }),
+          "gap-1 text-xs font-normal"
+        )}
+        aria-label="Your account"
+      >
+        {email ?? "Account"}
+        <ChevronDown className="size-3 opacity-60" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[160px]">
         <DropdownMenuItem

@@ -1,18 +1,19 @@
-export const dynamic = 'force-dynamic'
+import { TopNav } from "@/components/layout/top-nav"
+import { createClient } from "@/lib/supabase/server"
 
-import { SignOutButton } from '@/components/auth/sign-out-button'
-
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="border-b px-6 py-3 flex items-center justify-between">
-        <span className="font-semibold text-base">PortfolioForge</span>
-        <SignOutButton />
-      </header>
+    <div className="flex min-h-screen flex-col">
+      <TopNav userEmail={user?.email} />
       <div className="flex flex-1 flex-col">{children}</div>
     </div>
   )
