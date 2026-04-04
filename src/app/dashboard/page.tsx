@@ -1,19 +1,13 @@
-import { createClient } from '@/lib/supabase/server'
+import { ChartSkeleton } from "@/components/dashboard/chart-skeleton"
+import { SummaryCards } from "@/components/dashboard/summary-cards"
+import { MetricsStrip } from "@/components/dashboard/metrics-strip"
 
-export default async function DashboardPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+export default function DashboardPage() {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
-      <h1 className="text-3xl font-bold tracking-tight">
-        Welcome, {user?.email}
-      </h1>
-      <p className="text-muted-foreground">
-        Your portfolio dashboard will appear here.
-      </p>
+    <main className="flex-1 max-w-screen-2xl mx-auto w-full px-6 py-6 space-y-8">
+      <ChartSkeleton />
+      <SummaryCards />
+      <MetricsStrip />
     </main>
   )
 }
