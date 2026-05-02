@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: "Completed 03-02: errors, interface, migration"
-last_updated: "2026-05-02T21:39:23.619Z"
+stopped_at: Completed 03-03-frankfurter-fx-PLAN.md
+last_updated: "2026-05-02T21:42:00.269Z"
 last_activity: "2026-04-04 — Completed 02-03: dashboard skeleton page and coming-soon placeholders"
 progress:
   total_phases: 7
   completed_phases: 2
   total_plans: 12
-  completed_plans: 8
+  completed_plans: 9
   percent: 29
 ---
 
@@ -59,6 +59,7 @@ Progress: [███░░░░░░░] 29%
 | Phase 02-app-shell-design-system P03 | 3min | 2 tasks | 8 files |
 | Phase 03-market-data-pipeline P01 | 7min | 3 tasks | 17 files |
 | Phase 03-market-data-pipeline P02 | 5min | 3 tasks | 7 files |
+| Phase 03-market-data-pipeline P03 | 15 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -97,6 +98,9 @@ Progress: [███░░░░░░░] 29%
 - [Phase 03-market-data-pipeline]: isDataError validates kind against Set allowlist (not just presence) — guards against EODHD response shape collisions
 - [Phase 03-market-data-pipeline]: Gap tracking uses first_date/last_date columns on instruments (added Plan 04), not sibling instrument_gaps table
 - [Phase 03-market-data-pipeline]: isin_lookups composite PK (isin, ticker, exchange) preserves all venue listings for multi-venue UCITS ETFs; no TTL for v1
+- [Phase 03-market-data-pipeline]: mock-fetch passThrough option added — integration tests mix real Supabase REST calls with mocked Frankfurter API; without passThrough the mock intercepts all fetch calls including Supabase
+- [Phase 03-market-data-pipeline]: seed-fx.ts main() guarded by isMain (process.argv check) — ESM equivalent of require.main === module; prevents CLI side-effects when runSeed imported by tests
+- [Phase 03-market-data-pipeline]: errors.ts created in plan 03 (not 02) — plan 02 IMarketDataProvider was not yet complete; errors.ts is self-contained and needed by frankfurter.ts
 
 ### Pending Todos
 
@@ -110,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-02T21:39:23.615Z
-Stopped at: Completed 03-02: errors, interface, migration
+Last session: 2026-05-02T21:42:00.265Z
+Stopped at: Completed 03-03-frankfurter-fx-PLAN.md
 Resume file: None
