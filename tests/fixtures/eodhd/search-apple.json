@@ -1,0 +1,4 @@
+[
+  { "Code": "AAPL", "Exchange": "US", "Name": "Apple Inc", "Type": "Common Stock", "Country": "USA", "Currency": "USD", "ISIN": "US0378331005" },
+  { "Code": "AAPL", "Exchange": "LSE", "Name": "Apple Inc", "Type": "Common Stock", "Country": "UK", "Currency": "GBP", "ISIN": "US0378331005" }
+]

@@ -1,0 +1,12 @@
+[
+  { "date": "2024-01-02", "open": 469.18, "high": 473.54, "low": 468.11, "close": 472.33, "adjusted_close": 472.33, "volume": 62830100 },
+  { "date": "2024-01-03", "open": 471.00, "high": 472.89, "low": 466.30, "close": 467.42, "adjusted_close": 467.42, "volume": 58123400 },
+  { "date": "2024-01-04", "open": 467.50, "high": 468.74, "low": 463.55, "close": 465.06, "adjusted_close": 465.06, "volume": 61245600 },
+  { "date": "2024-01-05", "open": 464.80, "high": 466.12, "low": 462.44, "close": 463.80, "adjusted_close": 463.80, "volume": 55678900 },
+  { "date": "2024-01-08", "open": 465.60, "high": 471.87, "low": 464.90, "close": 470.73, "adjusted_close": 470.73, "volume": 64321000 },
+  { "date": "2024-01-09", "open": 471.20, "high": 473.00, "low": 469.55, "close": 470.04, "adjusted_close": 470.04, "volume": 57892300 },
+  { "date": "2024-01-10", "open": 470.88, "high": 478.00, "low": 470.50, "close": 476.68, "adjusted_close": 476.68, "volume": 70123400 },
+  { "date": "2024-01-11", "open": 475.90, "high": 478.55, "low": 474.10, "close": 476.45, "adjusted_close": 476.45, "volume": 59345600 },
+  { "date": "2024-01-12", "open": 477.20, "high": 480.00, "low": 476.80, "close": 479.98, "adjusted_close": 479.98, "volume": 63210000 },
+  { "date": "2024-01-15", "open": 479.00, "high": 481.12, "low": 477.55, "close": 478.33, "adjusted_close": 478.33, "volume": 56789200 }
+]
