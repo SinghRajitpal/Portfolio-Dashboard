@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 03-03-frankfurter-fx-PLAN.md
-last_updated: "2026-05-02T21:42:00.269Z"
+stopped_at: Completed 03-04-eodhd-provider-and-cache-PLAN.md
+last_updated: "2026-05-02T21:53:59.871Z"
 last_activity: "2026-04-04 — Completed 02-03: dashboard skeleton page and coming-soon placeholders"
 progress:
   total_phases: 7
   completed_phases: 2
   total_plans: 12
-  completed_plans: 9
+  completed_plans: 10
   percent: 29
 ---
 
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 
 ## Current Position
 
-Phase: 2 of 7 complete (App Shell & Design System)
-Plan: 3 of 3 in Phase 2 (Phase 2 complete)
-Status: Phase 2 complete — ready for Phase 3 (Market Data Pipeline)
-Last activity: 2026-04-04 — Completed 02-03: dashboard skeleton page and coming-soon placeholders
+Phase: 3 of 7 in progress (Market Data Pipeline)
+Plan: 4 of 6 in Phase 3 (Plan 04 complete — EODHD provider and cache)
+Status: Phase 3 in progress — Plans 01-04 complete, Plans 05-06 remaining
+Last activity: 2026-05-02 — Completed 03-04: EODHD provider, withRetry backoff, cache-prices helpers, getPricesForTicker
 
-Progress: [███░░░░░░░] 29%
+Progress: [████████░░] 83%
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Progress: [███░░░░░░░] 29%
 | Phase 03-market-data-pipeline P01 | 7min | 3 tasks | 17 files |
 | Phase 03-market-data-pipeline P02 | 5min | 3 tasks | 7 files |
 | Phase 03-market-data-pipeline P03 | 15 | 3 tasks | 8 files |
+| Phase 03-market-data-pipeline P04 | 8min | 4 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,9 @@ Progress: [███░░░░░░░] 29%
 - [Phase 03-market-data-pipeline]: mock-fetch passThrough option added — integration tests mix real Supabase REST calls with mocked Frankfurter API; without passThrough the mock intercepts all fetch calls including Supabase
 - [Phase 03-market-data-pipeline]: seed-fx.ts main() guarded by isMain (process.argv check) — ESM equivalent of require.main === module; prevents CLI side-effects when runSeed imported by tests
 - [Phase 03-market-data-pipeline]: errors.ts created in plan 03 (not 02) — plan 02 IMarketDataProvider was not yet complete; errors.ts is self-contained and needed by frankfurter.ts
+- [Phase 03-market-data-pipeline]: eodhd SDK exports EODHDClient (not API); SDK retry disabled (maxRetries: 0) so withRetry has exclusive control; constructor injection used for test isolation
+- [Phase 03-market-data-pipeline]: serverExternalPackages is top-level in Next.js 15+ (not under experimental); withRetry default maxAttempts: 4 (1 initial + 3 retries with 1s/2s/4s delays)
+- [Phase 03-market-data-pipeline]: getDividends failure is non-fatal in getPricesForTicker — instruments with no dividends still ingest correctly; first_date presence determines cache-hit detection
 
 ### Pending Todos
 
@@ -114,6 +118,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-02T21:42:00.265Z
-Stopped at: Completed 03-03-frankfurter-fx-PLAN.md
+Last session: 2026-05-02T21:53:59.867Z
+Stopped at: Completed 03-04-eodhd-provider-and-cache-PLAN.md
 Resume file: None
