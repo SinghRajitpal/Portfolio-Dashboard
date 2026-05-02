@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 03-04-eodhd-provider-and-cache-PLAN.md
-last_updated: "2026-05-02T21:53:59.871Z"
-last_activity: "2026-04-04 — Completed 02-03: dashboard skeleton page and coming-soon placeholders"
+status: executing
+stopped_at: Completed 03-05-search-route-and-openfigi-PLAN.md
+last_updated: "2026-05-02T22:05:02.093Z"
+last_activity: "2026-05-02 — Completed 03-04: EODHD provider, withRetry backoff, cache-prices helpers, getPricesForTicker"
 progress:
   total_phases: 7
   completed_phases: 2
   total_plans: 12
-  completed_plans: 10
-  percent: 29
+  completed_plans: 11
+  percent: 83
 ---
 
 # Project State
@@ -61,6 +61,7 @@ Progress: [████████░░] 83%
 | Phase 03-market-data-pipeline P02 | 5min | 3 tasks | 7 files |
 | Phase 03-market-data-pipeline P03 | 15 | 3 tasks | 8 files |
 | Phase 03-market-data-pipeline P04 | 8min | 4 tasks | 10 files |
+| Phase 03-market-data-pipeline P05 | 7min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -105,6 +106,9 @@ Progress: [████████░░] 83%
 - [Phase 03-market-data-pipeline]: eodhd SDK exports EODHDClient (not API); SDK retry disabled (maxRetries: 0) so withRetry has exclusive control; constructor injection used for test isolation
 - [Phase 03-market-data-pipeline]: serverExternalPackages is top-level in Next.js 15+ (not under experimental); withRetry default maxAttempts: 4 (1 initial + 3 retries with 1s/2s/4s delays)
 - [Phase 03-market-data-pipeline]: getDividends failure is non-fatal in getPricesForTicker — instruments with no dividends still ingest correctly; first_date presence determines cache-hit detection
+- [Phase 03-market-data-pipeline]: OPENFIGI_BASE_URL env override added to openfigi.ts for mock server injection in integration tests
+- [Phase 03-market-data-pipeline]: Proxy does not protect /api routes — proxy.ts only redirects /dashboard; API routes rely on RLS; architectural gap documented and deferred
+- [Phase 03-market-data-pipeline]: exchCode stored as-is from OpenFIGI (SW=SW matches EODHD, GS=XETRA mismatch documented, mapper deferred to Phase 4)
 
 ### Pending Todos
 
@@ -118,6 +122,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-02T21:53:59.867Z
-Stopped at: Completed 03-04-eodhd-provider-and-cache-PLAN.md
+Last session: 2026-05-02T22:05:02.089Z
+Stopped at: Completed 03-05-search-route-and-openfigi-PLAN.md
 Resume file: None
