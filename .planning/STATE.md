@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: "Completed 03-01: test infrastructure and proxy fix"
-last_updated: "2026-05-02T21:30:31.284Z"
+stopped_at: "Completed 03-02: errors, interface, migration"
+last_updated: "2026-05-02T21:39:23.619Z"
 last_activity: "2026-04-04 — Completed 02-03: dashboard skeleton page and coming-soon placeholders"
 progress:
   total_phases: 7
   completed_phases: 2
   total_plans: 12
-  completed_plans: 7
+  completed_plans: 8
   percent: 29
 ---
 
@@ -58,6 +58,7 @@ Progress: [███░░░░░░░] 29%
 | Phase 02-app-shell-design-system P02 | 5min | 2 tasks | 3 files |
 | Phase 02-app-shell-design-system P03 | 3min | 2 tasks | 8 files |
 | Phase 03-market-data-pipeline P01 | 7min | 3 tasks | 17 files |
+| Phase 03-market-data-pipeline P02 | 5min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,9 @@ Progress: [███░░░░░░░] 29%
 - [Phase 03-market-data-pipeline]: vitest.config.mts (ESM extension) required — vite-tsconfig-paths v6 is ESM-only and vitest v2 uses CJS for .ts config loading
 - [Phase 03-market-data-pipeline]: Probe route named 'probe' not '_probe' — Next.js 16 treats underscore-prefixed folders as private, excluded from routing
 - [Phase 03-market-data-pipeline]: vitest pinned to ^2 (not ^4) — vitest 4.x requires node >=20.19.0 via rolldown dependency; machine runs 20.16.0
+- [Phase 03-market-data-pipeline]: isDataError validates kind against Set allowlist (not just presence) — guards against EODHD response shape collisions
+- [Phase 03-market-data-pipeline]: Gap tracking uses first_date/last_date columns on instruments (added Plan 04), not sibling instrument_gaps table
+- [Phase 03-market-data-pipeline]: isin_lookups composite PK (isin, ticker, exchange) preserves all venue listings for multi-venue UCITS ETFs; no TTL for v1
 
 ### Pending Todos
 
@@ -106,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-02T21:30:31.280Z
-Stopped at: Completed 03-01: test infrastructure and proxy fix
+Last session: 2026-05-02T21:39:23.615Z
+Stopped at: Completed 03-02: errors, interface, migration
 Resume file: None
