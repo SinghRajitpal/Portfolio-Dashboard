@@ -5,11 +5,22 @@ export type FixtureRoute = {
   contentType?: string
 }
 
+export type MockFetchOptions = {
+  /**
+   * When true, URLs that don't match any fixture route are forwarded to the
+   * real network (original fetch). Defaults to false (throws on unmatched URLs).
+   *
+   * Use passThrough: true for integration tests that mix mocked external APIs
+   * (e.g. Frankfurter) with real Supabase REST calls in the same test.
+   */
+  passThrough?: boolean
+}
+
 let originalFetch: typeof globalThis.fetch | null = null
 
-export function installFetchMock(routes: FixtureRoute[]): void {
+export function installFetchMock(routes: FixtureRoute[], opts: MockFetchOptions = {}): void {
   originalFetch = globalThis.fetch
-  globalThis.fetch = async (input: RequestInfo | URL, _init?: RequestInit) => {
+  globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url =
       typeof input === 'string'
         ? input
@@ -29,6 +40,9 @@ export function installFetchMock(routes: FixtureRoute[]): void {
           headers: { 'Content-Type': r.contentType ?? 'application/json' },
         })
       }
+    }
+    if (opts.passThrough && originalFetch) {
+      return originalFetch(input, init)
     }
     throw new Error(`mock-fetch: no fixture matched ${url}`)
   }
