@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-05-search-route-and-openfigi-PLAN.md
-last_updated: "2026-05-02T22:05:02.093Z"
+stopped_at: "Checkpoint Task 4 of 03-06-cron-seed-and-smoke-PLAN.md (human-verify: real seed + Vercel deploy)"
+last_updated: "2026-05-02T22:14:20.002Z"
 last_activity: "2026-05-02 — Completed 03-04: EODHD provider, withRetry backoff, cache-prices helpers, getPricesForTicker"
 progress:
   total_phases: 7
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 12
-  completed_plans: 11
+  completed_plans: 12
   percent: 83
 ---
 
@@ -62,6 +62,7 @@ Progress: [████████░░] 83%
 | Phase 03-market-data-pipeline P03 | 15 | 3 tasks | 8 files |
 | Phase 03-market-data-pipeline P04 | 8min | 4 tasks | 10 files |
 | Phase 03-market-data-pipeline P05 | 7min | 3 tasks | 7 files |
+| Phase 03-market-data-pipeline PP06 | 6min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,8 @@ Progress: [████████░░] 83%
 - [Phase 03-market-data-pipeline]: OPENFIGI_BASE_URL env override added to openfigi.ts for mock server injection in integration tests
 - [Phase 03-market-data-pipeline]: Proxy does not protect /api routes — proxy.ts only redirects /dashboard; API routes rely on RLS; architectural gap documented and deferred
 - [Phase 03-market-data-pipeline]: exchCode stored as-is from OpenFIGI (SW=SW matches EODHD, GS=XETRA mismatch documented, mapper deferred to Phase 4)
+- [Phase 03-market-data-pipeline]: URL constructor used for searchParams in cron route — request.nextUrl is undefined when GET called directly in vitest without Next.js runtime; URL(request.url).searchParams works in both contexts
+- [Phase 03-market-data-pipeline]: CRON_SECRET Bearer auth protects /api/cron/refresh-prices; proxy.ts api/cron exclusion proved by Test 1 (401 not 302 on no-auth request)
 
 ### Pending Todos
 
@@ -122,6 +125,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-02T22:05:02.089Z
-Stopped at: Completed 03-05-search-route-and-openfigi-PLAN.md
+Last session: 2026-05-02T22:14:03.044Z
+Stopped at: Checkpoint Task 4 of 03-06-cron-seed-and-smoke-PLAN.md (human-verify: real seed + Vercel deploy)
 Resume file: None
