@@ -119,7 +119,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-04-04 |
 | 2. App Shell & Design System | 1/3 | In Progress|  |
-| 3. Market Data Pipeline | 0/6 | Not started | - |
+| 3. Market Data Pipeline | 1/6 | In Progress|  |
 | 4. Portfolio Builder | 0/TBD | Not started | - |
 | 5. Backtesting Engine | 0/TBD | Not started | - |
 | 6. Projections | 0/TBD | Not started | - |

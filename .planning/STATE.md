@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Phase 3 context gathered
-last_updated: "2026-05-02T20:28:22.425Z"
+stopped_at: "Completed 03-01: test infrastructure and proxy fix"
+last_updated: "2026-05-02T21:30:31.284Z"
 last_activity: "2026-04-04 — Completed 02-03: dashboard skeleton page and coming-soon placeholders"
 progress:
   total_phases: 7
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 12
+  completed_plans: 7
   percent: 29
 ---
 
@@ -57,6 +57,7 @@ Progress: [███░░░░░░░] 29%
 | Phase 02-app-shell-design-system P01 | 14min | 3 tasks | 10 files |
 | Phase 02-app-shell-design-system P02 | 5min | 2 tasks | 3 files |
 | Phase 02-app-shell-design-system P03 | 3min | 2 tasks | 8 files |
+| Phase 03-market-data-pipeline P01 | 7min | 3 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,9 @@ Progress: [███░░░░░░░] 29%
 - [Phase 02-app-shell-design-system]: AccountMenu aria-label set to 'Your account' to avoid regex conflict with hamburger 'Open menu' in UI-04 Playwright test
 - [Phase 02-app-shell-design-system]: Dashboard page simplified to pure Server Component by removing Supabase getUser() — auth enforced by middleware, skeleton layout has no user-specific data
 - [Phase 02-app-shell-design-system]: SummaryCards use plain divs (not Card component) to enforce borderless whitespace-separated design matching Swiss minimalist aesthetic
+- [Phase 03-market-data-pipeline]: vitest.config.mts (ESM extension) required — vite-tsconfig-paths v6 is ESM-only and vitest v2 uses CJS for .ts config loading
+- [Phase 03-market-data-pipeline]: Probe route named 'probe' not '_probe' — Next.js 16 treats underscore-prefixed folders as private, excluded from routing
+- [Phase 03-market-data-pipeline]: vitest pinned to ^2 (not ^4) — vitest 4.x requires node >=20.19.0 via rolldown dependency; machine runs 20.16.0
 
 ### Pending Todos
 
@@ -102,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-02T20:28:22.418Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-market-data-pipeline/03-CONTEXT.md
+Last session: 2026-05-02T21:30:31.280Z
+Stopped at: Completed 03-01: test infrastructure and proxy fix
+Resume file: None
