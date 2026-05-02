@@ -11,13 +11,21 @@ export function createTestSupabaseClient(): SupabaseClient {
 
 export async function truncateMarketData(client: SupabaseClient): Promise<void> {
   // Order matters: child tables first.
-  const tables = ['prices', 'dividends', 'fx_rates', 'isin_lookups', 'instruments']
-  for (const t of tables) {
+  // isin_lookups has a composite PK (no id column) — delete by matching a column that's always NOT NULL.
+  const tablesWithId = ['prices', 'dividends', 'fx_rates', 'instruments']
+  for (const t of tablesWithId) {
     const { error } = await client
       .from(t)
       .delete()
       .neq('id', '00000000-0000-0000-0000-000000000000')
-    // Tolerate "relation does not exist" (isin_lookups added in plan 02)
     if (error && !error.message.includes('does not exist')) throw error
   }
+
+  // isin_lookups has composite PK — delete by matching isin NOT NULL
+  const { error: isinError } = await client
+    .from('isin_lookups')
+    .delete()
+    .not('isin', 'is', null)
+  // Tolerate "relation does not exist" until migration 00002 is applied
+  if (isinError && !isinError.message.includes('does not exist')) throw isinError
 }
