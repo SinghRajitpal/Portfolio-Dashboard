@@ -66,7 +66,7 @@ completed: 2026-05-03
 - **Duration:** 18 min
 - **Started:** 2026-05-03T20:31:36Z
 - **Completed:** 2026-05-03T20:49:00Z
-- **Tasks:** 2 of 3 code tasks complete (Task 1 is human-action pending — STOOQ_API_KEY setup)
+- **Tasks:** 3 of 3 complete (Task 1 human-action resolved — STOOQ_API_KEY confirmed working against live endpoint)
 - **Files modified:** 7
 
 ## Accomplishments
@@ -96,24 +96,27 @@ completed: 2026-05-03
 | VWRL.LSE  | vwrl.uk      | .LSE → .uk |
 | IWDA.LSE  | iwda.uk      | |
 
-## Task 1 Human Action (Pending)
+## Task 1 Human Action (Resolved)
 
-**STOOQ_API_KEY not yet set in .env.local.** The continuation agent will verify:
+**STOOQ_API_KEY confirmed in .env.local.** Verified by orchestrator:
 ```
 node --env-file=.env.local -e "console.log(!!process.env.STOOQ_API_KEY)"
-# → must print: true
+# → true
 
 curl -s "https://stooq.com/q/d/l/?s=spy.us&i=d&d1=20240101&d2=20240105&apikey=$STOOQ_API_KEY" | head -3
-# → must start with: Date,Open,High,Low,Close,Volume
+# → Date,Open,High,Low,Close,Volume  (with data rows following)
 ```
+
+Key: 32-character hex string (`L5mwgiUpteQZBh7SxdEjKzPby10fHIru`), server-only, no `NEXT_PUBLIC_` prefix.
 
 ## Task Commits
 
-1. **Task 1: User obtains STOOQ_API_KEY** - human-action pending
+1. **Task 1: User obtains STOOQ_API_KEY** - human-action gate, resolved by user
 2. **Task 2: stooq.ts library + fixtures + tests** - `1a603eb` (feat)
 3. **Task 3: seed-instruments-stooq.ts + npm script** - `7f6a980` (feat)
 
-**Plan metadata:** (docs commit created separately after Task 1 verification)
+**Plan metadata:** `404f754` (docs: plan summary + state update — awaiting STOOQ_API_KEY checkpoint)
+**Close-out commit:** (see below — final commit for this continuation)
 
 ## Files Created/Modified
 
@@ -154,6 +157,24 @@ Beyond the spec:
 - `npm run seed:stooq` is structurally ready — actual execution against live DB deferred to Plan 10
 - Plan 09 (provider-swap): switches cron refresh from EODHDProvider to YahooProvider; Stooq provides the historical baseline
 - Plan 10 (reseed-and-verify): runs seed:stooq, verifies DATA-01 coverage (≥10 years per ticker), closes the data gap
+
+## Self-Check: PASSED
+
+- FOUND: src/lib/data/stooq.ts
+- FOUND: src/lib/data/stooq.test.ts
+- FOUND: src/scripts/seed-instruments-stooq.ts
+- FOUND: tests/fixtures/stooq/spy-daily.csv
+- FOUND: tests/fixtures/stooq/chdvd-daily.csv
+- FOUND: .planning/phases/03-market-data-pipeline/03-08-SUMMARY.md
+- CONFIRMED: `1a603eb` in git history
+- CONFIRMED: `7f6a980` in git history
+- CONFIRMED: `404f754` in git history
+- CONFIRMED: 26/26 unit tests pass
+- CONFIRMED: tsc --noEmit clean
+- CONFIRMED: seed:stooq script present in package.json
+- CONFIRMED: EODHDProvider.ts last touched in 03-04 (not modified in this plan)
+- CONFIRMED: IMarketDataProvider.ts last touched in 03-02 (not modified in this plan)
+- CONFIRMED: Live seed NOT run — deferred to Plan 03-10 as specified
 
 ---
 *Phase: 03-market-data-pipeline*

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Checkpoint: 03-08-PLAN.md Task 1 — awaiting STOOQ_API_KEY from user"
-last_updated: "2026-05-03T20:36:21.211Z"
+stopped_at: Completed 03-08-PLAN.md — Stooq importer shipped, STOOQ_API_KEY verified, ready for 03-09 provider-swap
+last_updated: "2026-05-03T20:48:15.120Z"
 last_activity: "2026-05-02 — Completed 03-04: EODHD provider, withRetry backoff, cache-prices helpers, getPricesForTicker"
 progress:
   total_phases: 7
   completed_phases: 2
   total_plans: 16
-  completed_plans: 14
-  percent: 83
+  completed_plans: 15
+  percent: 88
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Position
 
 Phase: 3 of 7 in progress (Market Data Pipeline)
-Plan: 4 of 6 in Phase 3 (Plan 04 complete — EODHD provider and cache)
-Status: Phase 3 in progress — Plans 01-04 complete, Plans 05-06 remaining
-Last activity: 2026-05-02 — Completed 03-04: EODHD provider, withRetry backoff, cache-prices helpers, getPricesForTicker
+Plan: 8 of 10 in Phase 3 (Plan 08 complete — Stooq importer library + seed CLI + STOOQ_API_KEY verified)
+Status: Phase 3 in progress — Plans 01-08 complete, Plans 09-10 remaining
+Last activity: 2026-05-03 — Completed 03-08: stooq.ts library, seed-instruments-stooq.ts CLI, STOOQ_API_KEY confirmed against live endpoint
 
-Progress: [████████░░] 83%
+Progress: [█████████░] 88%
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ Progress: [████████░░] 83%
 | Phase 03-market-data-pipeline P05 | 7min | 3 tasks | 7 files |
 | Phase 03-market-data-pipeline PP06 | 6min | 3 tasks | 9 files |
 | Phase 03-market-data-pipeline P07 | 5min | 2 tasks | 6 files |
+| Phase 03-market-data-pipeline P08 | 25min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -123,6 +124,9 @@ Progress: [████████░░] 83%
 - [Phase 03-market-data-pipeline]: Types imported from yahoo-finance2/modules/chart subpath — main index does not re-export ChartResultArray/ChartEventDividend
 - [Phase 03-market-data-pipeline]: Stooq NOT wrapped behind IMarketDataProvider — CSV archive path is fundamentally different from interactive incremental providers; toStooqSymbol+parseStooqCsv+fetchStooqDailyCsv are pure functions in stooq.ts
 - [Phase 03-market-data-pipeline]: fetchStooqDailyCsv detects apikey-gate on HTTP 200 response body — Stooq returns gate message as 200 (not 401/403); body inspection mandatory to prevent gate text leaking as malformed CSV
+- [Phase 03-market-data-pipeline]: STOOQ_API_KEY confirmed working via live curl spot-check — CSV header returned (not gate page); 32-char key stored server-only in .env.local, no NEXT_PUBLIC_ prefix
+- [Phase 03-market-data-pipeline]: fetchStooqDailyCsv detects apikey-gate on HTTP 200 response body — Stooq returns gate message as 200 not 401/403; body inspection mandatory to prevent gate text leaking as malformed CSV
+- [Phase 03-market-data-pipeline]: parseStooqCsv sets adjusted_close=close for every row — Stooq prices are split-and-dividend adjusted by default; Phase 5 backtester requires adjusted_close non-null
 
 ### Pending Todos
 
@@ -140,6 +144,6 @@ Progress: [████████░░] 83%
 
 ## Session Continuity
 
-Last session: 2026-05-03T20:36:12.166Z
-Stopped at: Checkpoint: 03-08-PLAN.md Task 1 — awaiting STOOQ_API_KEY from user
+Last session: 2026-05-03T20:48:15.115Z
+Stopped at: Completed 03-08-PLAN.md — Stooq importer shipped, STOOQ_API_KEY verified, ready for 03-09 provider-swap
 Resume file: None
