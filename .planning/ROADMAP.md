@@ -8,7 +8,7 @@ PortfolioForge is built in seven phases that follow a strict dependency order: d
 
 - [x] **Phase 1: Foundation** - Supabase schema, auth flow, and project scaffolding
 - [ ] **Phase 2: App Shell & Design System** - Application layout, navigation, dashboard skeleton, component library, and visual identity
-- [ ] **Phase 3: Market Data Pipeline** - EODHD integration, FX rates, ISIN resolution, and cache layer
+- [x] **Phase 3: Market Data Pipeline** - EODHD integration, FX rates, ISIN resolution, and cache layer (completed 2026-05-03)
 - [ ] **Phase 4: Portfolio Builder** - Portfolio CRUD, instrument search, weight validation, templates, and metadata display
 - [ ] **Phase 5: Backtesting Engine** - Core simulation loop, CHF conversion, DRIP, rebalancing, metrics, and charts
 - [ ] **Phase 6: Projections** - Scenario projections, Monte Carlo simulation, contribution modeling, and inflation adjustment
@@ -123,7 +123,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-04-04 |
 | 2. App Shell & Design System | 1/3 | In Progress|  |
-| 3. Market Data Pipeline | 9/10 | In Progress|  |
+| 3. Market Data Pipeline | 10/10 | Complete   | 2026-05-03 |
 | 4. Portfolio Builder | 0/TBD | Not started | - |
 | 5. Backtesting Engine | 0/TBD | Not started | - |
 | 6. Projections | 0/TBD | Not started | - |

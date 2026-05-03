@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-09-PLAN.md — provider swap complete, YahooProvider wired in all production paths, LSE exchange added, SSAC.SW replacing IQQA.SW
-last_updated: "2026-05-03T20:59:04.469Z"
+stopped_at: Completed 03-10 Tasks 1-2 (re-seed + smoke test 5/5) — awaiting Task 3 human-verify gate (Vercel cron + 401 regression)
+last_updated: "2026-05-03T21:11:47.541Z"
 last_activity: "2026-05-03 — Completed 03-08: stooq.ts library, seed-instruments-stooq.ts CLI, STOOQ_API_KEY confirmed against live endpoint"
 progress:
   total_phases: 7
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 16
-  completed_plans: 15
+  completed_plans: 16
   percent: 88
 ---
 
@@ -66,6 +66,7 @@ Progress: [█████████░] 88%
 | Phase 03-market-data-pipeline P07 | 5min | 2 tasks | 6 files |
 | Phase 03-market-data-pipeline P08 | 25min | 3 tasks | 7 files |
 | Phase 03-market-data-pipeline P09 | 7min | 2 tasks | 6 files |
+| Phase 03-market-data-pipeline P10 | 70min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -131,6 +132,8 @@ Progress: [█████████░] 88%
 - [Phase 03-market-data-pipeline]: SSAC.SW ISIN confirmed as IE00B6R52259 — iShares MSCI ACWI UCITS ETF (Acc) CHF on SIX; replaces IQQA.SW which returned EODHD 404
 - [Phase 03-market-data-pipeline]: seed-instruments.ts prices mode is a no-op from Plan 09 — Stooq owns historical bulk seeding via seed:stooq
 - [Phase 03-market-data-pipeline]: Cron route per-ticker YahooProvider.getEod loop replaces EODHD bulkEod; 250ms inter-ticker throttle; LSE added to ALLOWED_EXCHANGES
+- [Phase 03-market-data-pipeline]: SPY seeded from Yahoo not Stooq — Stooq backward-adjusts cumulative dividends; Yahoo nominal close matches public reference exactly (2020-03-16: .85)
+- [Phase 03-market-data-pipeline]: Swiss SIX tickers (CSSPX/500E/CHDVD/SSAC/NOVN) use Yahoo not Stooq — Stooq returns empty CSV for all Swiss tickers; Yahoo covers full SIX history
 
 ### Pending Todos
 
@@ -148,6 +151,6 @@ Progress: [█████████░] 88%
 
 ## Session Continuity
 
-Last session: 2026-05-03T20:59:04.464Z
-Stopped at: Completed 03-09-PLAN.md — provider swap complete, YahooProvider wired in all production paths, LSE exchange added, SSAC.SW replacing IQQA.SW
+Last session: 2026-05-03T21:11:47.530Z
+Stopped at: Completed 03-10 Tasks 1-2 (re-seed + smoke test 5/5) — awaiting Task 3 human-verify gate (Vercel cron + 401 regression)
 Resume file: None
