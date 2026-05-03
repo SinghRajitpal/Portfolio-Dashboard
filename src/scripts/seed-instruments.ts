@@ -6,22 +6,22 @@
  * ISINs hardcoded for v1 template instruments — verified manually against issuer
  * factsheets. Reduces dependency on OpenFIGI for the well-known seed set.
  *
- * Rate budget: EODHD free tier = 20 calls/day.
- * With 14 instruments and both prices + dividends = 28 calls.
- * Split over 2 days using the `mode` CLI arg:
- *   Day 1: npm run seed:instruments prices   (14 calls)
- *   Day 2: npm run seed:instruments dividends (14 calls)
- *   Full:  npm run seed:instruments both      (28 calls — use only with paid key)
+ * Provider: YahooProvider (keyless) for dividends mode.
+ * Prices are seeded via `npm run seed:stooq` (StooqImporter), not this script.
+ *
+ * Usage:
+ *   npm run seed:instruments dividends  — seeds dividends for all instruments
+ *   npm run seed:instruments both       — seeds prices (no-op) + dividends
+ *   npm run seed:instruments prices     — no-op; use `npm run seed:stooq` instead
  *
  * Idempotency: if an instrument already has cached prices (first_date is set),
- * the prices fetch step is skipped for 'prices' and 'both' modes. For 'dividends'
- * mode, the instrument must already exist in the DB (seeded on Day 1).
+ * the prices fetch step is skipped. For 'dividends' mode, the instrument must
+ * already exist in the DB.
  */
 import { createClient } from '@supabase/supabase-js'
-import { EODHDProvider } from '@/lib/data/EODHDProvider'
+import { YahooProvider } from '@/lib/data/YahooProvider'
 import {
   upsertInstrumentMetadata,
-  upsertPrices,
   upsertDividends,
   getInstrumentByTicker,
 } from '@/lib/data/cache-prices'
@@ -31,8 +31,7 @@ import type { InstrumentMetadata } from '@/lib/data/types'
 /**
  * v1 template tickers — see RESEARCH.md "Pre-Seed Ticker List".
  * Hand-curated metadata: name/type/currency/exchange. expense_ratio and
- * dividend_yield are left null — populated lazily when EODHD fundamentals
- * lite is in scope (deferred for v1, per CONTEXT.md).
+ * dividend_yield are left null — populated lazily in a future phase.
  */
 export const SEED: InstrumentMetadata[] = [
   // Classic 60/40
@@ -129,11 +128,11 @@ export const SEED: InstrumentMetadata[] = [
     dividend_yield: null,
   },
   {
-    ticker: 'IQQA.SW',
-    name: 'iShares MSCI EM UCITS ETF',
-    isin: 'IE00B0M63177',
+    ticker: 'SSAC.SW',
+    name: 'iShares MSCI ACWI UCITS ETF (Acc)',
+    isin: 'IE00B6R52259',
     type: 'etf',
-    currency: 'USD',
+    currency: 'CHF',
     exchange: 'SW',
     expense_ratio: null,
     dividend_yield: null,
@@ -192,20 +191,31 @@ export type SeedSummary = {
 /**
  * Run the seed operation.
  *
- * @param opts.mode  - 'prices' | 'dividends' | 'both'. Controls which EODHD
- *                    calls are made per instrument. Use 'prices' on Day 1 and
- *                    'dividends' on Day 2 to stay within 20/day free tier budget.
+ * @param opts.mode  - 'prices' | 'dividends' | 'both'. Controls which calls are
+ *                    made per instrument.
+ *                    'prices' mode is a no-op — historical price seeding is done
+ *                    via `npm run seed:stooq` (StooqImporter).
+ *                    'dividends' and 'both' call YahooProvider.getDividends per ticker.
  */
 export async function runSeed(
   opts: { mode: 'prices' | 'dividends' | 'both' } = { mode: 'both' },
 ): Promise<SeedSummary> {
+  const summary: SeedSummary = { processed: 0, skipped: 0, prices: 0, dividends: 0, errors: [] }
+
+  // 'prices' mode is a no-op — Stooq owns historical bulk price seeding now.
+  if (opts.mode === 'prices') {
+    console.warn(
+      'seed-instruments.ts: prices mode is a no-op — use `npm run seed:stooq` for ' +
+      'one-shot historical bulk import via StooqImporter. Exiting with summary.',
+    )
+    return summary
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY!
-  const apiKey = process.env.EODHD_API_KEY!
   const supabase = createClient(url, key, { auth: { persistSession: false } })
-  const provider = new EODHDProvider(apiKey)
-
-  const summary: SeedSummary = { processed: 0, skipped: 0, prices: 0, dividends: 0, errors: [] }
+  // YahooProvider is keyless — no API key required
+  const provider = new YahooProvider()
 
   for (const meta of SEED) {
     // Idempotency: if instrument already has prices, skip the prices step.
@@ -228,20 +238,7 @@ export async function runSeed(
       continue
     }
 
-    if (opts.mode === 'prices' || opts.mode === 'both') {
-      const prices = await provider.getEod(meta.ticker)
-      if (isDataError(prices)) {
-        summary.errors.push(`${meta.ticker}: prices ${prices.kind} ${prices.message}`)
-        continue
-      }
-      const r = await upsertPrices(supabase, upserted.id, prices)
-      if (isDataError(r)) {
-        summary.errors.push(`${meta.ticker}: prices upsert ${r.message}`)
-        continue
-      }
-      summary.prices += r.upserted
-    }
-
+    // Note: 'prices' mode guard above ensures we only reach here for 'dividends' or 'both'
     if (opts.mode === 'dividends' || opts.mode === 'both') {
       const divs = await provider.getDividends(meta.ticker)
       if (isDataError(divs)) {
@@ -261,7 +258,7 @@ export async function runSeed(
 
     summary.processed++
     console.log(
-      `Seeded ${meta.ticker} — prices: ${opts.mode !== 'dividends'}, divs: ${opts.mode !== 'prices'}`,
+      `Seeded ${meta.ticker} — mode: ${opts.mode}, prices: false (use seed:stooq), divs: true`,
     )
   }
 
@@ -272,7 +269,9 @@ export async function runSeed(
  * CLI entry point.
  * Usage:
  *   npm run seed:instruments [prices|dividends|both]
- * Required env: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, EODHD_API_KEY
+ * Required env: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+ * Note: EODHD_API_KEY no longer required — YahooProvider is keyless.
+ *       'prices' mode is a no-op; use `npm run seed:stooq` for historical bulk import.
  */
 async function main() {
   const mode = (process.argv[2] as 'prices' | 'dividends' | 'both') ?? 'both'

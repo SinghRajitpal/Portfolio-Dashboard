@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { EODHDProvider } from './EODHDProvider'
+import { YahooProvider } from './YahooProvider'
 import {
   upsertPrices,
   upsertDividends,
@@ -59,7 +59,8 @@ export async function getPricesForTicker(
   }
 
   // ── 2. Cache miss — fetch from provider ──────────────────────────────────
-  const provider = deps.provider ?? new EODHDProvider(process.env.EODHD_API_KEY ?? '')
+  // Yahoo is keyless — no API key required. EODHDProvider kept on disk as reference only.
+  const provider = deps.provider ?? new YahooProvider()
 
   // ── 2a. Resolve instrument metadata ──────────────────────────────────────
   let meta: InstrumentMetadata
@@ -77,14 +78,14 @@ export async function getPricesForTicker(
       dividend_yield: m.dividend_yield ?? null,
     }
   } else {
-    // Search EODHD to resolve name/type/currency
+    // Search Yahoo to resolve name/type/currency
     const searchResults = await provider.search(symbol, { limit: 10 })
     if (isDataError(searchResults)) return searchResults
     const match = searchResults.find(r => r.exchange === exchange && r.ticker === symbol)
     if (!match) {
       return {
         kind: 'not_found',
-        message: `EODHD search did not return ${ticker} (search returned ${searchResults.length} results for "${symbol}")`,
+        message: `Provider search did not return ${ticker} (search returned ${searchResults.length} results for "${symbol}")`,
       }
     }
     meta = {
@@ -94,7 +95,7 @@ export async function getPricesForTicker(
       type: match.type,
       currency: match.currency,
       exchange: match.exchange,
-      expense_ratio: null,    // not available in EODHD search response
+      expense_ratio: null,    // not available in Yahoo Finance search response
       dividend_yield: null,
     }
   }
