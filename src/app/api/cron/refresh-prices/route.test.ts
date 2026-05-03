@@ -3,17 +3,14 @@
  *
  * Strategy: call the imported GET function directly (no live server).
  * - `@supabase/supabase-js` createClient is mocked to return an in-memory fake.
- * - `@/lib/data/EODHDProvider` is mocked so bulkEod returns fixture data.
- * - No real EODHD API calls or Supabase network calls.
+ * - `@/lib/data/YahooProvider` is mocked so getEod returns configurable results.
+ * - No real Yahoo Finance API calls or Supabase network calls.
  *
- * For date-agnostic matching: the bulk fixture uses date "2026-05-01". The route
- * derives `today` from `new Date()`. Tests do not assert the date field on the
- * response body — they assert upserted counts and error kinds instead. This
- * avoids fragile date coupling to fixture contents.
+ * Per-ticker loop behavior: each tracked instrument on the exchange gets one
+ * YahooProvider.getEod() call. The handler best-efforts all tickers — errors
+ * from individual tickers go to skipped[], not a 5xx.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import * as fs from 'node:fs'
-import * as path from 'node:path'
 
 // ── In-memory Supabase mock ──────────────────────────────────────────────────
 
@@ -62,24 +59,30 @@ vi.mock('@supabase/supabase-js', () => ({
   createClient: () => mockSupabase,
 }))
 
-// ── EODHDProvider mock ───────────────────────────────────────────────────────
+// ── YahooProvider mock ───────────────────────────────────────────────────────
 
-function loadBulkFixture(): unknown[] {
-  return JSON.parse(
-    fs.readFileSync(path.join(process.cwd(), 'tests/fixtures/eodhd/bulk-us-sample.json'), 'utf-8'),
-  )
+// A single row fixture — returned by default for any getEod call
+const PRICE_ROW = {
+  date: '2026-05-01',
+  open: 580,
+  high: 585,
+  low: 578,
+  close: 583,
+  adjusted_close: 583,
+  volume: 1000000,
 }
 
-// Fixture bulk rows: SPY, AGG, VTI on 2026-05-01
-const bulkFixture = loadBulkFixture()
+// Configurable per-ticker result map: ticker -> result
+// If null, returns PRICE_ROW by default
+let getEodResultMap: Map<string, unknown> | null = null
 
-// Mock bulkEod to return fixture data by default; can be overridden per-test
-let mockBulkResult: unknown = bulkFixture
-
-vi.mock('@/lib/data/EODHDProvider', () => ({
-  EODHDProvider: class {
-    async bulkEod(_exchange: string, _date: string) {
-      return mockBulkResult
+vi.mock('@/lib/data/YahooProvider', () => ({
+  YahooProvider: class {
+    async getEod(ticker: string, _opts?: { from?: string; to?: string }) {
+      if (getEodResultMap && getEodResultMap.has(ticker)) {
+        return getEodResultMap.get(ticker)
+      }
+      return [PRICE_ROW]
     }
   },
 }))
@@ -92,7 +95,6 @@ const { GET } = await import('./route')
 function makeRequest(opts: {
   authorization?: string
   exchange?: string
-  envOverrides?: Record<string, string | undefined>
 }): Request {
   const url = opts.exchange
     ? `http://localhost/api/cron/refresh-prices?exchange=${opts.exchange}`
@@ -112,20 +114,18 @@ describe('GET /api/cron/refresh-prices', () => {
     mockInstruments = []
     mockPrices = []
     mockSupabaseError = null
-    mockBulkResult = bulkFixture
+    getEodResultMap = null
 
-    // Set required env vars for most tests
+    // Set required env vars
     process.env.CRON_SECRET = CRON_SECRET
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key'
-    process.env.EODHD_API_KEY = 'test-eodhd-key'
   })
 
   afterEach(() => {
     delete process.env.CRON_SECRET
     delete process.env.NEXT_PUBLIC_SUPABASE_URL
     delete process.env.SUPABASE_SERVICE_ROLE_KEY
-    delete process.env.EODHD_API_KEY
   })
 
   it('Test 1: returns 401 when no Authorization header is provided', async () => {
@@ -150,7 +150,7 @@ describe('GET /api/cron/refresh-prices', () => {
     expect(json.kind).toBe('invalid_input')
   })
 
-  it('Test 4: returns 400 when exchange param is not US or SW (e.g. ZZ)', async () => {
+  it('Test 4: returns 400 when exchange param is not US, SW, or LSE (e.g. ZZ)', async () => {
     const req = makeRequest({ authorization: VALID_AUTH, exchange: 'ZZ' })
     const res = await GET(req as never)
     expect(res.status).toBe(400)
@@ -158,8 +158,7 @@ describe('GET /api/cron/refresh-prices', () => {
     expect(json.kind).toBe('invalid_input')
   })
 
-  it('Test 5: returns 200 and upserts matching tracked ticker from bulk fixture', async () => {
-    // Pre-seed instruments: SPY.US tracked in exchange US
+  it('Test 5: returns 200 for exchange=US with per-ticker YahooProvider.getEod loop', async () => {
     mockInstruments = [
       { id: 'inst-spy-uuid', ticker: 'SPY.US', exchange: 'US', first_date: null },
     ]
@@ -169,31 +168,38 @@ describe('GET /api/cron/refresh-prices', () => {
     expect(res.status).toBe(200)
     const json = await res.json()
 
-    // Response shape assertions
     expect(json.ok).toBe(true)
     expect(json.exchange).toBe('US')
-    // SPY is in fixture — should be upserted
-    expect(json.upserted).toBeGreaterThanOrEqual(1)
-    // 3 rows in bulk fixture, 1 tracked — 2 unmatched, 0 in skipped (just unmatched != skipped)
-    expect(json.returnedByEODHD).toBe(3)
     expect(json.tracked).toBe(1)
+    expect(json.upserted).toBeGreaterThanOrEqual(1)
     expect(Array.isArray(json.skipped)).toBe(true)
     expect(json.skipped.length).toBe(0)
 
-    // Verify DB write: prices table should have the SPY row
+    // Verify DB write
     expect(mockPrices.length).toBeGreaterThanOrEqual(1)
     expect(mockPrices.some(p => p.instrument_id === 'inst-spy-uuid')).toBe(true)
   })
 
-  it('Test 6: returns 200 with upserted=0 when bulk contains no matching tracked tickers', async () => {
-    // Tracked instrument is TSLA.US — but fixture only has SPY, AGG, VTI
+  it('Test 6: returns 200 for exchange=LSE (LSE is now a valid exchange)', async () => {
     mockInstruments = [
-      { id: 'inst-tsla-uuid', ticker: 'TSLA.US', exchange: 'US', first_date: null },
+      { id: 'inst-vwrl-uuid', ticker: 'VWRL.LSE', exchange: 'LSE', first_date: null },
     ]
-    // Override bulk to return AAPL and GOOG (neither tracked)
-    mockBulkResult = [
-      { code: 'AAPL', exchange_short_name: 'US', date: '2026-05-01', open: 170, high: 172, low: 169, close: 171, adjusted_close: 171, volume: 1000 },
-      { code: 'GOOG', exchange_short_name: 'US', date: '2026-05-01', open: 180, high: 182, low: 179, close: 181, adjusted_close: 181, volume: 2000 },
+
+    const req = makeRequest({ authorization: VALID_AUTH, exchange: 'LSE' })
+    const res = await GET(req as never)
+    expect(res.status).toBe(200)
+    const json = await res.json()
+
+    expect(json.ok).toBe(true)
+    expect(json.exchange).toBe('LSE')
+    expect(json.tracked).toBe(1)
+    expect(json.upserted).toBeGreaterThanOrEqual(1)
+  })
+
+  it('Test 7: per-ticker loop — 2 tracked tickers, getEod returns 1 row each → upserted=2', async () => {
+    mockInstruments = [
+      { id: 'inst-spy-uuid', ticker: 'SPY.US', exchange: 'US', first_date: null },
+      { id: 'inst-agg-uuid', ticker: 'AGG.US', exchange: 'US', first_date: null },
     ]
 
     const req = makeRequest({ authorization: VALID_AUTH, exchange: 'US' })
@@ -202,11 +208,36 @@ describe('GET /api/cron/refresh-prices', () => {
     const json = await res.json()
 
     expect(json.ok).toBe(true)
-    expect(json.upserted).toBe(0)
-    expect(json.returnedByEODHD).toBe(2)
-    expect(json.tracked).toBe(1)
+    expect(json.tracked).toBe(2)
+    expect(json.upserted).toBe(2)
     expect(json.skipped).toEqual([])
-    // No DB writes
-    expect(mockPrices.length).toBe(0)
+
+    // Both instruments should have a price row
+    expect(mockPrices.some(p => p.instrument_id === 'inst-spy-uuid')).toBe(true)
+    expect(mockPrices.some(p => p.instrument_id === 'inst-agg-uuid')).toBe(true)
+  })
+
+  it('Test 8: ticker with getEod error goes to skipped[], request still returns 200', async () => {
+    mockInstruments = [
+      { id: 'inst-spy-uuid', ticker: 'SPY.US', exchange: 'US', first_date: null },
+      { id: 'inst-err-uuid', ticker: 'ERR.US', exchange: 'US', first_date: null },
+    ]
+
+    // SPY succeeds, ERR.US returns not_found
+    getEodResultMap = new Map([
+      ['ERR.US', { kind: 'not_found', message: 'symbol not found' }],
+    ])
+
+    const req = makeRequest({ authorization: VALID_AUTH, exchange: 'US' })
+    const res = await GET(req as never)
+    expect(res.status).toBe(200)
+    const json = await res.json()
+
+    expect(json.ok).toBe(true)
+    expect(json.tracked).toBe(2)
+    // SPY upserted, ERR.US skipped
+    expect(json.upserted).toBe(1)
+    expect(json.skipped.length).toBe(1)
+    expect(json.skipped[0]).toContain('ERR.US')
   })
 })

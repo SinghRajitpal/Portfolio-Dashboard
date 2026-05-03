@@ -1,5 +1,5 @@
 /**
- * GET /api/cron/refresh-prices?exchange=US|SW
+ * GET /api/cron/refresh-prices?exchange=US|SW|LSE
  *
  * Auth: CRON_SECRET via Authorization: Bearer header. Vercel Cron sends this
  * automatically when CRON_SECRET is set in the Vercel project env.
@@ -8,19 +8,23 @@
  * per Plan 01 — see src/proxy.ts config.matcher). Cron requests arrive directly
  * at this route handler without the Supabase SSR proxy wrapping them.
  *
- * Strategy: bulkEod(exchange, today) returns all tickers on the exchange.
- * Filter to tracked tickers (instruments table where exchange = X).
- * Upsert matching rows. One bulk call covers many tickers — fits the 20/day budget.
+ * Strategy: per-ticker YahooProvider.getEod() loop.
+ * Yahoo has no bulk endpoint — iterate tracked instruments on the exchange and
+ * call getEod(ticker, { from: today, to: today }) for each one.
+ * With ~14 tickers × 250ms throttle = ~3.5s total — well within Vercel timeout.
  *
  * Service-role client used because cron runs server-side with no user session.
+ *
+ * Exchanges supported: US, SW, LSE (added so VWRL.LSE and IWDA.LSE refresh nightly).
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
-import { EODHDProvider } from '@/lib/data/EODHDProvider'
+import { YahooProvider } from '@/lib/data/YahooProvider'
 import { upsertPrices } from '@/lib/data/cache-prices'
 import { isDataError } from '@/lib/data/errors'
 
-const ALLOWED_EXCHANGES = new Set(['US', 'SW'])
+// LSE added so VWRL.LSE and IWDA.LSE refresh nightly (Yahoo supports .L suffix via symbol-map)
+const ALLOWED_EXCHANGES = new Set(['US', 'SW', 'LSE'])
 
 export async function GET(request: NextRequest) {
   // 1. Auth — CRON_SECRET must be present and match the Bearer token
@@ -72,51 +76,40 @@ export async function GET(request: NextRequest) {
       exchange,
       tracked: 0,
       upserted: 0,
+      skipped: [],
       note: 'No tracked instruments yet',
     })
   }
 
-  // 5. Bulk EOD for today
-  const apiKey = process.env.EODHD_API_KEY
-  if (!apiKey) {
-    return NextResponse.json(
-      { kind: 'transient', message: 'Missing EODHD_API_KEY', attempt: 0 },
-      { status: 503 },
-    )
-  }
-  const provider = new EODHDProvider(apiKey)
+  // 5. Per-ticker YahooProvider.getEod loop
+  // Yahoo is keyless — no API key required (STATE.md decision: YahooProvider for daily incremental)
+  const provider = new YahooProvider()
   const today = new Date().toISOString().split('T')[0]
-  const bulkRows = await provider.bulkEod(exchange as 'US' | 'SW', today)
-  if (isDataError(bulkRows)) {
-    return NextResponse.json(bulkRows, { status: bulkRows.kind === 'rate_limit' ? 429 : 503 })
-  }
-
-  // 6. Filter to tracked tickers and upsert per instrument
-  // EODHD bulk row uses `code` field (no exchange suffix). Tracked.ticker is "SPY.US" — strip suffix.
-  const trackedMap = new Map<string, string>() // code -> instrument_id
-  for (const t of tracked) {
-    const code = (t.ticker as string).split('.')[0]
-    trackedMap.set(code, t.id as string)
-  }
 
   let upsertedTotal = 0
   const skipped: string[] = []
-  for (const row of bulkRows) {
-    const instrumentId = trackedMap.get(row.code)
-    if (!instrumentId) continue
-    const result = await upsertPrices(supabase, instrumentId, [
-      {
-        date: row.date,
-        open: row.open,
-        high: row.high,
-        low: row.low,
-        close: row.close,
-        adjusted_close: row.adjusted_close,
-        volume: row.volume,
-      },
-    ])
-    if (isDataError(result)) skipped.push(`${row.code}: ${result.message}`)
-    else upsertedTotal += result.upserted
+
+  for (const t of tracked) {
+    // Pass from=today, to=today — Yahoo returns the latest trading day even if
+    // today is a weekend or holiday. The symbol mapper (toYahooSymbol) translates
+    // VWRL.LSE → VWRL.L and IWDA.LSE → IWDA.L automatically inside YahooProvider.
+    const rows = await provider.getEod(t.ticker as string, { from: today, to: today })
+    if (isDataError(rows)) {
+      skipped.push(`${t.ticker}: ${rows.kind} ${rows.message}`)
+      continue
+    }
+    if (rows.length === 0) continue // no trading on this day
+
+    const result = await upsertPrices(supabase, t.id as string, rows)
+    if (isDataError(result)) {
+      skipped.push(`${t.ticker}: upsert ${result.message}`)
+    } else {
+      upsertedTotal += result.upserted
+    }
+
+    // Throttle to avoid Yahoo Finance anonymous rate-limiting.
+    // 250ms × 14 tickers = ~3.5s total — well within Vercel's 10s function timeout.
+    await new Promise(r => setTimeout(r, 250))
   }
 
   return NextResponse.json({
@@ -124,7 +117,7 @@ export async function GET(request: NextRequest) {
     exchange,
     date: today,
     tracked: tracked.length,
-    returnedByEODHD: bulkRows.length,
+    attempted: tracked.length,
     upserted: upsertedTotal,
     skipped,
   })

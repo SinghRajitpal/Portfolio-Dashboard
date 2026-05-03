@@ -6,7 +6,7 @@
  *
  * Auto-detects input shape:
  * - 12-char ISIN regex match → OpenFIGI lookup (cache-first via isin_lookups table)
- * - Otherwise → EODHD search by ticker/name
+ * - Otherwise → YahooProvider text search (keyless)
  *
  * Auth: enforced by proxy.ts (this is NOT in the api/cron exclusion).
  * Phase 3: This route requires authentication via proxy.ts. Plan 01 confirmed proxy
@@ -19,7 +19,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { isISIN, resolveISIN } from '@/lib/data/openfigi'
 import { readCachedISIN, upsertISINMappings } from '@/lib/data/cache-isin'
-import { EODHDProvider } from '@/lib/data/EODHDProvider'
+import { YahooProvider } from '@/lib/data/YahooProvider'
 import { isDataError, type DataError } from '@/lib/data/errors'
 import type { SearchResult } from '@/lib/data/types'
 import type { IMarketDataProvider } from '@/lib/data/IMarketDataProvider'
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
             ({
               ticker: c.ticker,
               exchange: c.exchange,
-              // name not stored in cache; Phase 4 can enrich via EODHD if needed
+              // name not stored in cache; Phase 4 can enrich via YahooProvider if needed
               name: '',
               type: c.security_type ?? '',
               currency: c.currency ?? '',
@@ -100,12 +100,8 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // Branch 2: Text search via EODHD
-  const apiKey = process.env.EODHD_API_KEY
-  if (!apiKey) {
-    return jsonError({ kind: 'invalid_input', message: 'Server missing EODHD_API_KEY' })
-  }
-  const provider: IMarketDataProvider = new EODHDProvider(apiKey)
+  // Branch 2: Text search via YahooProvider (keyless — no API key required)
+  const provider: IMarketDataProvider = new YahooProvider()
   const results = await provider.search(query, { limit })
   if (isDataError(results)) return jsonError(results)
   return NextResponse.json(results)
