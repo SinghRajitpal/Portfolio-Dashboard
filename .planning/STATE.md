@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Phase 3 closing — DATA-01 gap discovered, awaiting verifier and Phase 3.1 plan"
-last_updated: "2026-05-02T23:30:00.000Z"
-last_activity: "2026-05-02 — Phase 3 plans 01-06 shipped structurally; data-source pivot to Stooq + yahoo-finance2 deferred to Phase 3.1"
+stopped_at: Completed 03-07-PLAN.md (YahooProvider + symbol-map)
+last_updated: "2026-05-03T20:30:19.040Z"
+last_activity: "2026-05-02 — Completed 03-04: EODHD provider, withRetry backoff, cache-prices helpers, getPricesForTicker"
 progress:
   total_phases: 7
-  completed_phases: 3
-  total_plans: 12
-  completed_plans: 12
+  completed_phases: 2
+  total_plans: 16
+  completed_plans: 13
   percent: 83
 ---
 
@@ -63,6 +63,7 @@ Progress: [████████░░] 83%
 | Phase 03-market-data-pipeline P04 | 8min | 4 tasks | 10 files |
 | Phase 03-market-data-pipeline P05 | 7min | 3 tasks | 7 files |
 | Phase 03-market-data-pipeline PP06 | 6min | 3 tasks | 9 files |
+| Phase 03-market-data-pipeline P07 | 5min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -117,6 +118,9 @@ Progress: [████████░░] 83%
 - [Phase 03-market-data-pipeline P06]: Yahoo LSE symbols use `.L` suffix not `.LSE`; Swiss `.SW` works unchanged. Symbol mapper required when swapping to YahooProvider.
 - [Phase 03-market-data-pipeline P06]: Supabase docs `[YOUR-PASSWORD]` placeholder syntax can leak into env files — strip `[` and `]` from DATABASE_URL and SUPABASE_DB_PASSWORD before use.
 - [Phase 03-market-data-pipeline P06]: tsx CLI does not auto-load .env.local — `node --env-file=.env.local --import tsx <script>` is the working invocation; package.json seed scripts updated accordingly.
+- [Phase 03-market-data-pipeline]: yahoo-finance2 v3 (not v2) required — v2 ESM build lacks chart() module needed for daily OHLCV history
+- [Phase 03-market-data-pipeline]: YahooProvider uses period1/period2 epoch seconds in all chart() calls, never range=max — confirmed safe from monthly downsampling
+- [Phase 03-market-data-pipeline]: Types imported from yahoo-finance2/modules/chart subpath — main index does not re-export ChartResultArray/ChartEventDividend
 
 ### Pending Todos
 
@@ -134,6 +138,6 @@ Progress: [████████░░] 83%
 
 ## Session Continuity
 
-Last session: 2026-05-02T23:30:00.000Z
-Stopped at: Phase 3 closing — DATA-01 gap discovered, awaiting verifier run and Phase 3.1 plan
+Last session: 2026-05-03T20:30:19.036Z
+Stopped at: Completed 03-07-PLAN.md (YahooProvider + symbol-map)
 Resume file: None
