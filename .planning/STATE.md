@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-07-PLAN.md (YahooProvider + symbol-map)
-last_updated: "2026-05-03T20:30:19.040Z"
+stopped_at: "Checkpoint: 03-08-PLAN.md Task 1 — awaiting STOOQ_API_KEY from user"
+last_updated: "2026-05-03T20:36:21.211Z"
 last_activity: "2026-05-02 — Completed 03-04: EODHD provider, withRetry backoff, cache-prices helpers, getPricesForTicker"
 progress:
   total_phases: 7
   completed_phases: 2
   total_plans: 16
-  completed_plans: 13
+  completed_plans: 14
   percent: 83
 ---
 
@@ -121,6 +121,8 @@ Progress: [████████░░] 83%
 - [Phase 03-market-data-pipeline]: yahoo-finance2 v3 (not v2) required — v2 ESM build lacks chart() module needed for daily OHLCV history
 - [Phase 03-market-data-pipeline]: YahooProvider uses period1/period2 epoch seconds in all chart() calls, never range=max — confirmed safe from monthly downsampling
 - [Phase 03-market-data-pipeline]: Types imported from yahoo-finance2/modules/chart subpath — main index does not re-export ChartResultArray/ChartEventDividend
+- [Phase 03-market-data-pipeline]: Stooq NOT wrapped behind IMarketDataProvider — CSV archive path is fundamentally different from interactive incremental providers; toStooqSymbol+parseStooqCsv+fetchStooqDailyCsv are pure functions in stooq.ts
+- [Phase 03-market-data-pipeline]: fetchStooqDailyCsv detects apikey-gate on HTTP 200 response body — Stooq returns gate message as 200 (not 401/403); body inspection mandatory to prevent gate text leaking as malformed CSV
 
 ### Pending Todos
 
@@ -138,6 +140,6 @@ Progress: [████████░░] 83%
 
 ## Session Continuity
 
-Last session: 2026-05-03T20:30:19.036Z
-Stopped at: Completed 03-07-PLAN.md (YahooProvider + symbol-map)
+Last session: 2026-05-03T20:36:12.166Z
+Stopped at: Checkpoint: 03-08-PLAN.md Task 1 — awaiting STOOQ_API_KEY from user
 Resume file: None
