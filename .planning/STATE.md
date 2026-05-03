@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-08-PLAN.md — Stooq importer shipped, STOOQ_API_KEY verified, ready for 03-09 provider-swap
-last_updated: "2026-05-03T20:48:15.120Z"
-last_activity: "2026-05-02 — Completed 03-04: EODHD provider, withRetry backoff, cache-prices helpers, getPricesForTicker"
+stopped_at: Completed 03-09-PLAN.md — provider swap complete, YahooProvider wired in all production paths, LSE exchange added, SSAC.SW replacing IQQA.SW
+last_updated: "2026-05-03T20:59:04.469Z"
+last_activity: "2026-05-03 — Completed 03-08: stooq.ts library, seed-instruments-stooq.ts CLI, STOOQ_API_KEY confirmed against live endpoint"
 progress:
   total_phases: 7
   completed_phases: 2
@@ -65,6 +65,7 @@ Progress: [█████████░] 88%
 | Phase 03-market-data-pipeline PP06 | 6min | 3 tasks | 9 files |
 | Phase 03-market-data-pipeline P07 | 5min | 2 tasks | 6 files |
 | Phase 03-market-data-pipeline P08 | 25min | 3 tasks | 7 files |
+| Phase 03-market-data-pipeline P09 | 7min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -127,6 +128,9 @@ Progress: [█████████░] 88%
 - [Phase 03-market-data-pipeline]: STOOQ_API_KEY confirmed working via live curl spot-check — CSV header returned (not gate page); 32-char key stored server-only in .env.local, no NEXT_PUBLIC_ prefix
 - [Phase 03-market-data-pipeline]: fetchStooqDailyCsv detects apikey-gate on HTTP 200 response body — Stooq returns gate message as 200 not 401/403; body inspection mandatory to prevent gate text leaking as malformed CSV
 - [Phase 03-market-data-pipeline]: parseStooqCsv sets adjusted_close=close for every row — Stooq prices are split-and-dividend adjusted by default; Phase 5 backtester requires adjusted_close non-null
+- [Phase 03-market-data-pipeline]: SSAC.SW ISIN confirmed as IE00B6R52259 — iShares MSCI ACWI UCITS ETF (Acc) CHF on SIX; replaces IQQA.SW which returned EODHD 404
+- [Phase 03-market-data-pipeline]: seed-instruments.ts prices mode is a no-op from Plan 09 — Stooq owns historical bulk seeding via seed:stooq
+- [Phase 03-market-data-pipeline]: Cron route per-ticker YahooProvider.getEod loop replaces EODHD bulkEod; 250ms inter-ticker throttle; LSE added to ALLOWED_EXCHANGES
 
 ### Pending Todos
 
@@ -144,6 +148,6 @@ Progress: [█████████░] 88%
 
 ## Session Continuity
 
-Last session: 2026-05-03T20:48:15.115Z
-Stopped at: Completed 03-08-PLAN.md — Stooq importer shipped, STOOQ_API_KEY verified, ready for 03-09 provider-swap
+Last session: 2026-05-03T20:59:04.464Z
+Stopped at: Completed 03-09-PLAN.md — provider swap complete, YahooProvider wired in all production paths, LSE exchange added, SSAC.SW replacing IQQA.SW
 Resume file: None
