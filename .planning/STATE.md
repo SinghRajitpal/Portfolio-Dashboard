@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Checkpoint Task 4 of 03-06-cron-seed-and-smoke-PLAN.md (human-verify: real seed + Vercel deploy)"
-last_updated: "2026-05-02T22:14:20.002Z"
-last_activity: "2026-05-02 — Completed 03-04: EODHD provider, withRetry backoff, cache-prices helpers, getPricesForTicker"
+stopped_at: "Phase 3 closing — DATA-01 gap discovered, awaiting verifier and Phase 3.1 plan"
+last_updated: "2026-05-02T23:30:00.000Z"
+last_activity: "2026-05-02 — Phase 3 plans 01-06 shipped structurally; data-source pivot to Stooq + yahoo-finance2 deferred to Phase 3.1"
 progress:
   total_phases: 7
   completed_phases: 3
@@ -68,8 +68,8 @@ Progress: [████████░░] 83%
 
 ### Decisions
 
-- Data source: EODHD free tier (20 req/day) as primary for v1 — same architecture as paid plan, throttled. Aggressive Supabase caching makes this viable at personal scale. Upgrade to $19.99/mo paid only if rate budget becomes a real bottleneck.
-- yahoo-finance2 dropped from the pipeline — single source of truth per ticker. EODHD-only, no fallback chain.
+- ~~Data source: EODHD free tier (20 req/day) as primary for v1~~ **REVERSED 2026-05-02** — EODHD free tier silently truncates EOD history to ~12 months regardless of `from` parameter, breaking DATA-01 (full history per ticker). Pivoting in Phase 3.1 to Stooq (one-time bulk historical import) + yahoo-finance2 (daily incremental). Both free, both cover US + Swiss SIX + LSE (Yahoo needs `.LSE` → `.L` symbol mapping). EODHDProvider code stays as a reference; consumers swap to YahooProvider behind the IMarketDataProvider seam from 03-02.
+- ~~yahoo-finance2 dropped from the pipeline — single source of truth per ticker. EODHD-only, no fallback chain.~~ **REVERSED 2026-05-02** — new shape is two providers (Stooq archive + yahoo incremental) normalized through the Postgres cache; cache layer remains the single source of truth at consumption time.
 - FX rates: Frankfurter API (free, ECB-sourced, no key required)
 - ISIN resolution: OpenFIGI (free, Bloomberg-backed)
 - Computation: All backtest and Monte Carlo runs in browser Web Workers via comlink — never in Vercel serverless functions
@@ -112,19 +112,28 @@ Progress: [████████░░] 83%
 - [Phase 03-market-data-pipeline]: exchCode stored as-is from OpenFIGI (SW=SW matches EODHD, GS=XETRA mismatch documented, mapper deferred to Phase 4)
 - [Phase 03-market-data-pipeline]: URL constructor used for searchParams in cron route — request.nextUrl is undefined when GET called directly in vitest without Next.js runtime; URL(request.url).searchParams works in both contexts
 - [Phase 03-market-data-pipeline]: CRON_SECRET Bearer auth protects /api/cron/refresh-prices; proxy.ts api/cron exclusion proved by Test 1 (401 not 302 on no-auth request)
+- [Phase 03-market-data-pipeline P06]: EODHD free tier silently truncates EOD history to ~12 months — confirmed against SPY.US (250 rows starting 2025-05-05 despite from=1970-01-01). DATA-01 not delivered; pivoting to Stooq + yahoo-finance2 in Phase 3.1.
+- [Phase 03-market-data-pipeline P06]: Yahoo `range=max&interval=1d` silently downsamples to monthly — full daily history requires explicit period1/period2 epoch seconds, possibly chunked.
+- [Phase 03-market-data-pipeline P06]: Yahoo LSE symbols use `.L` suffix not `.LSE`; Swiss `.SW` works unchanged. Symbol mapper required when swapping to YahooProvider.
+- [Phase 03-market-data-pipeline P06]: Supabase docs `[YOUR-PASSWORD]` placeholder syntax can leak into env files — strip `[` and `]` from DATABASE_URL and SUPABASE_DB_PASSWORD before use.
+- [Phase 03-market-data-pipeline P06]: tsx CLI does not auto-load .env.local — `node --env-file=.env.local --import tsx <script>` is the working invocation; package.json seed scripts updated accordingly.
 
 ### Pending Todos
 
-None yet.
+- Phase 3.1: Replace EODHDProvider with YahooProvider (incremental) + StooqImporter (one-time bulk archive); re-seed all 14 v1 tickers
+- Phase 3.1: Replace IQQA.SW in v1 seed list — EODHD 404; verify correct ticker against Yahoo (likely SSAC.SW for iShares MSCI ACWI Acc)
+- Phase 3.1: Vercel deploy + manual cron trigger + production proxy 401 regression check (deferred from 03-06 Task 4)
+- Phase 3.1: SPY 2020-03-16 (COVID circuit-breaker) adjusted-close sanity check vs public reference, within 0.5%
 
 ### Blockers/Concerns
 
-- Phase 3: Validate UCITS ETF dividend schedule coverage in EODHD — irregular ex-dates for European ETFs may affect DRIP modeling accuracy
+- ~~Phase 3: Validate UCITS ETF dividend schedule coverage in EODHD~~ — moot, pivoting away from EODHD
+- Phase 3.1: Verify Stooq Swiss SIX coverage before committing — Stooq is partial on Switzerland; yahoo-finance2 covers all v1 Swiss tickers but Stooq is the historical-archive workhorse
 - Phase 6: Monte Carlo distribution choice (Gaussian vs. historical bootstrap vs. fat-tail) must be decided before Phase 6 planning
 - Phase 6: Swiss CPI data source for inflation adjustment not yet confirmed — BFS API ergonomics unclear
 
 ## Session Continuity
 
-Last session: 2026-05-02T22:14:03.044Z
-Stopped at: Checkpoint Task 4 of 03-06-cron-seed-and-smoke-PLAN.md (human-verify: real seed + Vercel deploy)
+Last session: 2026-05-02T23:30:00.000Z
+Stopped at: Phase 3 closing — DATA-01 gap discovered, awaiting verifier run and Phase 3.1 plan
 Resume file: None

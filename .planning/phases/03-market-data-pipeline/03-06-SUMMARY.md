@@ -51,13 +51,13 @@ decisions:
   - "CRON_INTEGRATION_TEST env flag gates real EODHD call in cron happy-path test — prevents accidental budget consumption in CI"
 
 metrics:
-  duration: "~6 minutes (Tasks 1-3)"
+  duration: "~6 minutes (Tasks 1-3) + ~1 hour (Task 4 partial run + DATA-01 gap discovery)"
   completed_date: "2026-05-02"
   tasks_completed: 3
   tasks_total: 4
+  task_4_status: "deferred to Phase 3.1 — DATA-01 gap discovered during partial run"
   files_created: 7
   files_modified: 2
-  checkpoint_at: "Task 4 (human-verify: real seed + Vercel deploy)"
 ---
 
 # Phase 03 Plan 06: Cron Seed and Smoke Summary
@@ -136,18 +136,64 @@ Script at `src/scripts/seed-instruments.ts` with:
 - **Verification:** `tsc --noEmit` passes cleanly.
 - **Commit:** f477bd9
 
-## Checkpoint: Task 4 (human-verify)
+## Task 4: Human-Verify Outcome — Partial Run, DATA-01 Gap Discovered
 
-**Status:** Awaiting human verification of real EODHD seed + Vercel production deploy.
+**Status:** **DEFERRED to Phase 3.1.** Phase 3 closes structurally complete with a documented data-source gap.
 
-See checkpoint details in the plan. Key steps:
-1. Generate CRON_SECRET: `openssl rand -hex 32`
-2. Add to `.env.local` AND Vercel project env (Production + Preview)
-3. Day 1: `npm run seed:instruments prices` (14 EODHD calls)
-4. Day 2: `npm run seed:instruments dividends` (14 EODHD calls)
-5. Run smoke test against populated DB: `npm run test:integration -- tests/integration/data/phase3-smoke.spec.ts`
-6. Deploy: `git push origin main`, then trigger cron manually in Vercel dashboard
-7. Production verification: visit cron URL without bearer → 401 (not 302)
+### What was actually run
+
+| Step | Result |
+|------|--------|
+| 1. Generate `CRON_SECRET` | ✓ `openssl rand -hex 32`, added to `.env.local` and Vercel (Prod + Preview) |
+| 2. Add `EODHD_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, `SUPABASE_DB_PASSWORD` | ✓ all set in `.env.local` (brackets stripped from password — Supabase docs placeholder leak) |
+| 3. Push migrations 00002, 00003 to cloud Supabase | ✓ `npx supabase db push --include-all` clean |
+| 4. Update `package.json` seed scripts to load `.env.local` | ✓ `node --env-file=.env.local --import tsx` |
+| 5. Day 1 seed: `npm run seed:instruments prices` | ✓ 13/14 succeeded, 3,246 rows, 14 EODHD calls — but see DATA-01 gap |
+| 6. Day 2 dividends seed | ✗ deferred (data-source pivot makes it moot) |
+| 7. Smoke test | ✗ deferred (would partially pass on truncated data — misleading) |
+| 8. Vercel deploy + manual cron trigger | ✗ deferred (no point until data source is correct) |
+| 9. Production proxy 401 regression | ✗ deferred |
+
+### Findings
+
+**1. DATA-01 not delivered (architectural — blocks Phase 5 backtester)**
+
+EODHD free tier silently truncates EOD history to ~12 months regardless of the `from` parameter sent. Confirmed against `SPY.US`: requested `from=1970-01-01`, got 250 rows starting 2025-05-05 (last_date 2026-05-01). All 13 successfully-seeded tickers show the same one-year cap — `SELECT first_date FROM instruments` returns dates clustered in May 2025.
+
+The Phase 3 success criterion "full history fetch + cache for any ticker" is not met. ROADMAP.md `must_haves` for DATA-01 must be re-verified against the gap-closure plan in Phase 3.1, not against the current seed.
+
+**Decision:** Pivot data source in Phase 3.1. Replace EODHD with **Stooq (one-time historical bulk import)** + **yahoo-finance2 (daily incremental refresh)**. Both free, both cover US + Swiss SIX + LSE. Reverses the original PROJECT.md decision *"yahoo-finance2 dropped — single source of truth per ticker, no fallback chain"*; new shape is Stooq-for-archive + yahoo-for-incremental, normalized through the Postgres cache.
+
+The `IMarketDataProvider` interface from 03-02 is exactly the right seam for this swap — most of 03-04's `withRetry`, `cache-prices`, and `getPricesForTicker` orchestration code stays. The `EODHDProvider` class becomes a `YahooProvider` (incremental) + a one-shot `StooqImporter` script.
+
+**2. Yahoo coverage verified for all v1 tickers (Phase 3.1 input)**
+
+Curl-tested against `query2.finance.yahoo.com/v8/finance/chart` with explicit `period1`/`period2`:
+
+| Ticker | Yahoo symbol | 5y rows | First date |
+|--------|--------------|---------|------------|
+| SPY.US | `SPY` | 1255 | 2021-05-04 |
+| CHDVD.SW | `CHDVD.SW` | 1256 | 2021-05-04 |
+| NOVN.SW | `NOVN.SW` | 1256 | 2021-05-04 |
+| CSSPX.SW | `CSSPX.SW` | 1256 | 2021-05-04 |
+| 500E.SW | `500E.SW` | 614 | 2023-11-13 (ETF inception) |
+| VWRL.LSE | `VWRL.L` | 1262 | 2021-05-04 |
+| IWDA.LSE | `IWDA.L` | 1262 | 2021-05-04 |
+
+LSE tickers need symbol mapping `.LSE` → `.L`. Swiss `.SW` works unchanged. Important: Yahoo's `range=max&interval=1d` silently downsamples to monthly; full daily history requires explicit `period1`/`period2` in epoch seconds, chunked if needed.
+
+**3. IQQA.SW is wrong on EODHD (operational)**
+
+EODHD returned 404 for `IQQA.SW`. Likely correct symbol is `SSAC.SW` for the Acc class of iShares MSCI ACWI UCITS, or the Swiss listing simply isn't on EODHD. Will be verified against Yahoo/Stooq in Phase 3.1.
+
+### Deferred for Phase 3.1
+
+- Replace EODHDProvider with YahooProvider + StooqImporter
+- Re-seed all 14 v1 tickers (with corrected ticker for IQQA.SW)
+- Run `phase3-smoke.spec.ts` against populated DB with full history
+- Verify SPY adjusted-close for 2020-03-16 (COVID circuit-breaker day) within 0.5% of public reference
+- Vercel production deploy + manual cron trigger
+- Production-side proxy 401 regression check
 
 ## Self-Check: PASSED
 
