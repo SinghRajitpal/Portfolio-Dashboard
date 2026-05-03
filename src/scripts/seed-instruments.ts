@@ -34,7 +34,7 @@ import type { InstrumentMetadata } from '@/lib/data/types'
  * dividend_yield are left null — populated lazily when EODHD fundamentals
  * lite is in scope (deferred for v1, per CONTEXT.md).
  */
-const SEED: InstrumentMetadata[] = [
+export const SEED: InstrumentMetadata[] = [
   // Classic 60/40
   {
     ticker: 'SPY.US',
