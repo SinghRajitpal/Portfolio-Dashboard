@@ -255,7 +255,31 @@ Note: adjusted_close=$219.19 reflects cumulative dividend adjustment (Yahoo adju
 
 ## Task 2: Phase 3 Smoke Test
 
-_To be run and appended after the smoke test execution._
+Command: `npm run test:integration -- tests/integration/data/phase3-smoke.spec.ts`
+
+**Note:** Smoke test truncates and re-inserts fixtures in beforeAll/afterAll (Option A — deterministic fixture-driven). DB was re-seeded after the test.
+
+Output (relevant excerpt):
+```
+Running 29 tests using 1 worker
+...
+  ✓  20 [chromium] › phase3-smoke.spec.ts:176:7 › Criterion 1 (cache hit): getPricesForTicker returns cached rows without calling EODHD (118ms)
+  ✓  21 [chromium] › phase3-smoke.spec.ts:190:7 › Criterion 2 (FX 1999): fx_rates has CHF/USD, EUR, GBP back to 1999-01-04 (173ms)
+  ✓  22 [chromium] › phase3-smoke.spec.ts:214:7 › Criterion 3 (ISIN): CH0237935637 resolves to CHDVD and instrument has prices (111ms)
+  ✓  23 [chromium] › phase3-smoke.spec.ts:239:7 › Criterion 4 (metadata): SPY.US has name, type=etf, currency=USD stored (62ms)
+  ✓  24 [chromium] › phase3-smoke.spec.ts:260:7 › Criterion 5 (Swiss + US): both SPY.US and CHDVD.SW have prices and dividends (235ms)
+...
+  3 skipped (intentional gates: CRON_INTEGRATION_TEST, OPENFIGI_BASE_URL)
+  26 passed (13.9s)
+```
+
+**Result:** 5/5 smoke criteria PASS. Exit code 0.
+
+Post-smoke re-seed (DB restored after afterAll truncation):
+- Swiss Yahoo fallback (CSSPX/500E/CHDVD/SSAC/NOVN): re-seeded
+- SPY Yahoo override: re-seeded (8,371 rows [1993-01-29 → 2026-05-01])
+- Dividends: re-seeded (1,044 rows, 9/14 tickers distributing)
+- Total prices after restore: 66,164 rows
 
 ---
 
