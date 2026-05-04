@@ -25,7 +25,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Portfolio Builder
 
 - [x] **PORT-01**: User can create, edit, and delete named portfolios
-- [ ] **PORT-02**: User can search and add instruments by ticker or name
+- [x] **PORT-02**: User can search and add instruments by ticker or name
 - [x] **PORT-03**: User can set percentage weights that validate to 100%
 - [x] **PORT-04**: User can set total investment amount per portfolio
 - [x] **PORT-05**: User can see weighted expense ratio for their portfolio
@@ -67,7 +67,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### ETF Metadata
 
-- [ ] **META-01**: User can view basic ETF metadata (name, expense ratio, dividend yield, currency)
+- [x] **META-01**: User can view basic ETF metadata (name, expense ratio, dividend yield, currency)
 
 ## v2 Requirements
 
@@ -124,14 +124,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-04 | Phase 3 | Complete |
 | DATA-05 | Phase 3 | Complete |
 | PORT-01 | Phase 4 | Complete |
-| PORT-02 | Phase 4 | Pending |
+| PORT-02 | Phase 4 | Complete |
 | PORT-03 | Phase 4 | Complete |
 | PORT-04 | Phase 4 | Complete |
 | PORT-05 | Phase 4 | Complete |
 | PORT-06 | Phase 4 | Complete |
 | PORT-07 | Phase 4 | Complete |
 | PORT-08 | Phase 4 | Complete |
-| META-01 | Phase 4 | Pending |
+| META-01 | Phase 4 | Complete |
 | BACK-01 | Phase 5 | Pending |
 | BACK-02 | Phase 5 | Pending |
 | BACK-03 | Phase 5 | Pending |

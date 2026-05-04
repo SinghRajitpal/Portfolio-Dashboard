@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Server-side persistence layer landed — save_portfolio plpgsql RPC (atomic upsert + DELETE/INSERT items), savePortfolio + deletePortfolio Server Actions, queries module, real service-role test helpers, RPC round-trip test 2/2 green; ready for Plan 04 builder UI
-stopped_at: Completed 04-03-server-actions-rpc-PLAN.md
-last_updated: "2026-05-04T19:10:49.397Z"
-last_activity: "2026-05-04 — Completed 04-03: save_portfolio RPC + Server Actions + queries + helpers (4 commits, 194 unit tests green, ~6min)"
+status: Reusable PortfolioBuilder client component shipped — RHF + zod, 5 client components + 1 pure helper, /api/instruments/resolve route returning { id, meta }, mergedMeta extension pattern eliminates Plan 05 post-hoc patching; ready for Plan 05 pages and templates
+stopped_at: Completed 04-04-builder-components-PLAN.md
+last_updated: "2026-05-04T19:11:56.715Z"
+last_activity: "2026-05-04 — Completed 04-04: groupSearchResults + /api/instruments/resolve + InstrumentCombobox + InstrumentRow + TotalBadge + WeightedMetricsStrip + PortfolioBuilder (4 commits, 192 unit tests green, ~7min)"
 progress:
   total_phases: 7
   completed_phases: 3
   total_plans: 22
-  completed_plans: 19
-  percent: 86
+  completed_plans: 21
+  percent: 91
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Position
 
 Phase: 4 of 7 IN PROGRESS (Portfolio Builder)
-Plan: 3 of 6 in Phase 4 (04-03 server-actions + RPC COMPLETE)
-Status: Server-side persistence layer landed — save_portfolio plpgsql RPC (atomic upsert + DELETE/INSERT items), savePortfolio + deletePortfolio Server Actions, queries module, real service-role test helpers, RPC round-trip test 2/2 green; ready for Plan 04 builder UI
-Last activity: 2026-05-04 — Completed 04-03: save_portfolio RPC + Server Actions + queries + helpers (4 commits, 194 unit tests green, ~6min)
+Plan: 4 of 6 in Phase 4 (04-04 builder-components COMPLETE)
+Status: Reusable PortfolioBuilder client component shipped — RHF + zod, 5 client components + 1 pure helper, /api/instruments/resolve route returning { id, meta }, mergedMeta extension pattern eliminates Plan 05 post-hoc patching; ready for Plan 05 pages and templates
+Last activity: 2026-05-04 — Completed 04-04: groupSearchResults + /api/instruments/resolve + InstrumentCombobox + InstrumentRow + TotalBadge + WeightedMetricsStrip + PortfolioBuilder (4 commits, 192 unit tests green, ~7min)
 
-Progress: [█████████░] 86%
+Progress: [█████████░] 91%
 
 ## Performance Metrics
 
@@ -70,6 +70,7 @@ Progress: [█████████░] 86%
 | Phase 04-portfolio-builder P01 | 10min | 3 tasks | 25 files |
 | Phase 04-portfolio-builder P02 | 4min | 3 tasks | 10 files |
 | Phase 04-portfolio-builder P03 | 6min | 3 tasks | 5 files |
+| Phase 04-portfolio-builder P04 | 7min | 4 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -152,6 +153,10 @@ Progress: [█████████░] 86%
 - [Phase 04-portfolio-builder]: Server Actions never call redirect() — return discriminated tuple {ok,id} and let caller navigate; keeps actions testable (mirrors RESEARCH Pitfall 5)
 - [Phase 04-portfolio-builder]: deletePortfolio re-queries post-DELETE to detect RLS silent-fail (non-owner DELETE returns 0 rows without error)
 - [Phase 04-portfolio-builder]: supabase.rpc + chained .select(string) cast via 'as never'/'as unknown as' — Database.public.Functions block empty in src/types/database.ts; regenerating Postgres types deferred to Phase 6+
+- [Phase 04-portfolio-builder]: Plan 04-04 builder: /api/instruments/resolve returns { id, meta } from day one — eliminates Plan 05 contract drift / post-hoc patching
+- [Phase 04-portfolio-builder]: Plan 04-04 builder: PortfolioBuilder owns local mergedMeta state seeded from props.instrumentsMeta and extended in-handler on every combobox onSelect — WeightedMetricsStrip subscribes to mergedMeta, not props
+- [Phase 04-portfolio-builder]: Plan 04-04 builder: typed Database client narrows multi-column instruments select-after-upsert to never; route casts createClient() to SupabaseClient (cache-prices.ts precedent) — also affects Plan 04-03 _queries.ts (deferred)
+- [Phase 04-portfolio-builder]: Plan 04-04 builder: InstrumentCombobox debounces 250ms via setTimeout + AbortController in refs (no useDebouncedCallback dep); DataError surfacing rate_limit→toast / transient→inline / not_found→empty / invalid_input→inline
 
 ### Pending Todos
 
@@ -170,6 +175,6 @@ Progress: [█████████░] 86%
 
 ## Session Continuity
 
-Last session: 2026-05-04T19:10:49.393Z
-Stopped at: Completed 04-03-server-actions-rpc-PLAN.md
+Last session: 2026-05-04T19:11:56.710Z
+Stopped at: Completed 04-04-builder-components-PLAN.md
 Resume file: None
