@@ -23,6 +23,7 @@ import {
   FormProvider,
   useFieldArray,
   useForm,
+  useWatch,
   type SubmitHandler,
 } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -179,18 +180,19 @@ export function PortfolioBuilder({
     await onSubmit(data)
   }
 
-  const investmentAmount = methods.watch('investment_amount')
-  const excludeTickers = React.useMemo(
-    () =>
-      (methods.watch('items') ?? []).map(
-        (it: { ticker?: string }) => `${it.ticker ?? ''}`,
-      ),
-    [methods],
-  )
-  // (excludeTickers above kept for future extension; currently the combobox
-  // de-dupes on `${ticker}.${exchange}` while form rows store ticker+name only.
-  // We still pass instrument_ids via excludeTickers param for forward compat.)
-  void excludeTickers
+  // Subscribe to live form state via useWatch so derived values
+  // (sum-of-weights, helper text, etc.) re-render on every change.
+  // useMemo([methods]) is broken — the `methods` ref is stable, so derived
+  // values never updated when weights changed.
+  const investmentAmount = useWatch({
+    control,
+    name: 'investment_amount',
+  }) as number | undefined
+
+  const watchedItems = (useWatch({ control, name: 'items' }) ?? []) as Array<{
+    ticker?: string
+    weight?: number
+  }>
 
   const computedSubmitLabel =
     submitLabel ??
@@ -201,14 +203,13 @@ export function PortfolioBuilder({
         : 'Save')
 
   const sumValid = React.useMemo(() => {
-    const items = methods.watch('items') ?? []
-    const sum = items.reduce(
-      (a: number, it: { weight?: number }) =>
+    const sum = watchedItems.reduce(
+      (a, it) =>
         a + (Number.isFinite(it.weight) ? Number(it.weight) : 0),
       0,
     )
     return Math.abs(sum - 100) <= 0.01
-  }, [methods])
+  }, [watchedItems])
 
   const saveDisabled =
     saving ||

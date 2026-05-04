@@ -81,48 +81,51 @@ export function PortfoliosListClient({
       className="divide-y divide-border/50"
     >
       {portfolios.map((p) => (
-        <li key={p.id} className="group relative">
+        // Overlay-link pattern: the entire row is clickable via an absolutely
+        // positioned Link that covers the row's bounding box. Interactive
+        // controls (DeletePortfolioButton) sit above the overlay via z-index
+        // so their clicks never reach the Link. This avoids the bubbling
+        // pitfall where Next.js's Link intercepts mousedown on nested
+        // controls regardless of stopPropagation.
+        <li
+          key={p.id}
+          className="group relative grid grid-cols-[2fr_80px_120px_120px_140px_auto] items-center gap-4 px-2 py-4 text-sm transition-colors hover:bg-muted/40"
+        >
           <Link
             href={`/dashboard/portfolios/${p.id}/edit`}
-            className="grid grid-cols-[2fr_80px_120px_120px_140px_auto] items-center gap-4 px-2 py-4 text-sm transition-colors hover:bg-muted/40"
+            aria-label={p.name}
+            className="absolute inset-0 z-0 rounded-sm focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
+          />
+
+          <span className="pointer-events-none relative z-10 truncate font-medium text-foreground">
+            {p.name}
+          </span>
+          <span className="pointer-events-none relative z-10 text-muted-foreground tabular-nums">
+            {p.instrument_count}{' '}
+            <span className="text-xs">
+              {p.instrument_count === 1 ? 'instr.' : 'instr.'}
+            </span>
+          </span>
+          <span
+            className="pointer-events-none relative z-10 text-muted-foreground tabular-nums"
+            title="Weighted TER"
           >
-            <span className="truncate font-medium text-foreground">
-              {p.name}
-            </span>
-            <span className="text-muted-foreground tabular-nums">
-              {p.instrument_count}{' '}
-              <span className="text-xs">
-                {p.instrument_count === 1 ? 'instr.' : 'instr.'}
-              </span>
-            </span>
-            <span
-              className="text-muted-foreground tabular-nums"
-              title="Weighted TER"
-            >
-              {formatPct(p.weighted_ter)}
-            </span>
-            <span
-              className="text-muted-foreground tabular-nums"
-              title="Weighted yield"
-            >
-              {formatPct(p.weighted_yield)}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {formatRelative(p.updated_at)}
-            </span>
-            <span
-              className="justify-self-end"
-              onClick={(e) => {
-                // Prevent the parent Link from intercepting clicks on the
-                // delete button. The button itself also stops propagation,
-                // but defense in depth keeps wrapping behaviour predictable.
-                e.stopPropagation()
-              }}
-              onKeyDown={(e) => e.stopPropagation()}
-            >
-              <DeletePortfolioButton id={p.id} name={p.name} />
-            </span>
-          </Link>
+            {formatPct(p.weighted_ter)}
+          </span>
+          <span
+            className="pointer-events-none relative z-10 text-muted-foreground tabular-nums"
+            title="Weighted yield"
+          >
+            {formatPct(p.weighted_yield)}
+          </span>
+          <span className="pointer-events-none relative z-10 text-xs text-muted-foreground">
+            {formatRelative(p.updated_at)}
+          </span>
+          {/* Interactive control sits ABOVE the Link overlay so its click
+              never bubbles to the Link. No stopPropagation needed. */}
+          <span className="relative z-10 justify-self-end">
+            <DeletePortfolioButton id={p.id} name={p.name} />
+          </span>
         </li>
       ))}
     </ul>

@@ -113,11 +113,26 @@ export async function loginTestUser(
       ? { userId: '', email: opts.email, password: opts.password }
       : await createTestUser()
 
-  await page.goto('/')
-  await page.getByRole('tab', { name: /sign in/i }).click()
-  await page.getByLabel(/email/i).fill(user.email)
-  await page.getByLabel(/password/i).fill(user.password)
-  await page.getByRole('button', { name: /sign in/i }).click()
-  await page.waitForURL('**/dashboard**')
+  await page.goto('/auth?tab=signin')
+  await page.fill('#signin-email', user.email)
+  await page.fill('#signin-password', user.password)
+  await page.click('button[type="submit"]')
+  await page.waitForURL('**/dashboard**', { timeout: 15_000 })
   return user
+}
+
+// Look up real seeded instrument ids by ticker — avoids hard-coding UUIDs in
+// tests. Uses the service client (bypasses RLS) and returns null if the
+// ticker is not seeded.
+export async function getInstrumentIdByTicker(
+  ticker: string,
+): Promise<string | null> {
+  const sb = getServiceClient()
+  const { data } = await sb
+    .from('instruments')
+    .select('id')
+    .eq('ticker', ticker)
+    .limit(1)
+    .maybeSingle()
+  return (data as { id: string } | null)?.id ?? null
 }

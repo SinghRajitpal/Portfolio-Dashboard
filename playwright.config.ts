@@ -1,4 +1,12 @@
 import { defineConfig, devices } from '@playwright/test'
+import { config as loadDotenv } from 'dotenv'
+import path from 'node:path'
+
+// Load .env.local before tests run so helpers (test-portfolio.ts) that
+// require service-role credentials can read process.env directly. Without
+// this, Playwright workers spawn with a clean env even though the dev
+// server inherits .env.local from Next.js.
+loadDotenv({ path: path.resolve(__dirname, '.env.local') })
 
 /**
  * Playwright configuration for PortfolioForge e2e tests.
@@ -6,6 +14,11 @@ import { defineConfig, devices } from '@playwright/test'
  */
 export default defineConfig({
   testDir: './tests',
+  // Exclude vitest unit tests from Playwright's discovery — they import vitest
+  // which is not loadable from a CommonJS context. Playwright should only
+  // pick up *.spec.ts files (e2e + integration).
+  testMatch: /.*\.spec\.ts$/,
+  testIgnore: ['**/unit/**', '**/node_modules/**'],
   timeout: 30_000,
   retries: 0,
   workers: 1,

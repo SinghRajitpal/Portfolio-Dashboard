@@ -176,6 +176,16 @@ export function InstrumentCombobox({
   }
 
   async function handlePick(listing: SearchResult) {
+    // Close the popover and clear search state IMMEDIATELY so the UI
+    // doesn't stick on a stale query when the user opens the combobox
+    // again. The async resolve continues in the background; on failure
+    // we surface a toast — no need to keep the popover open while
+    // /api/instruments/resolve resolves the canonical instrument id.
+    setOpen(false)
+    setQuery('')
+    setResults([])
+    setExpandedKey(null)
+
     setResolving(true)
     try {
       const r = await fetch('/api/instruments/resolve', {
@@ -220,12 +230,6 @@ export function InstrumentCombobox({
         expense_ratio: resolved.meta.expense_ratio,
         dividend_yield: resolved.meta.dividend_yield,
       })
-
-      // Reset and close
-      setOpen(false)
-      setQuery('')
-      setResults([])
-      setExpandedKey(null)
     } catch {
       toast.error('Could not resolve instrument; try again')
     } finally {
