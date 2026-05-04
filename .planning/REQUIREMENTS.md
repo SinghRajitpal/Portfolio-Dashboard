@@ -24,13 +24,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Portfolio Builder
 
-- [ ] **PORT-01**: User can create, edit, and delete named portfolios
+- [x] **PORT-01**: User can create, edit, and delete named portfolios
 - [ ] **PORT-02**: User can search and add instruments by ticker or name
 - [x] **PORT-03**: User can set percentage weights that validate to 100%
 - [x] **PORT-04**: User can set total investment amount per portfolio
 - [x] **PORT-05**: User can see weighted expense ratio for their portfolio
 - [x] **PORT-06**: User can see weighted dividend yield and estimated annual income
-- [ ] **PORT-07**: User can create a portfolio from a template (e.g., "Classic 60/40", "All-World")
+- [x] **PORT-07**: User can create a portfolio from a template (e.g., "Classic 60/40", "All-World")
 - [x] **PORT-08**: User can import portfolio allocations from CSV
 
 ### Market Data & Instruments
@@ -123,13 +123,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-03 | Phase 3 | Complete |
 | DATA-04 | Phase 3 | Complete |
 | DATA-05 | Phase 3 | Complete |
-| PORT-01 | Phase 4 | Pending |
+| PORT-01 | Phase 4 | Complete |
 | PORT-02 | Phase 4 | Pending |
 | PORT-03 | Phase 4 | Complete |
 | PORT-04 | Phase 4 | Complete |
 | PORT-05 | Phase 4 | Complete |
 | PORT-06 | Phase 4 | Complete |
-| PORT-07 | Phase 4 | Pending |
+| PORT-07 | Phase 4 | Complete |
 | PORT-08 | Phase 4 | Complete |
 | META-01 | Phase 4 | Pending |
 | BACK-01 | Phase 5 | Pending |

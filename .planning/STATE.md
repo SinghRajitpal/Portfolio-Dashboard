@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Pure-library and shared Zod schema layer landed — PortfolioSchema, computeMetrics, normalizeTo100, fmtCHF, parsePortfolioCsv all unit-tested (44/44 green); ready for Plan 03 server actions
-stopped_at: Completed 04-02-pure-libs-and-schema-PLAN.md
-last_updated: "2026-05-04T19:00:51.808Z"
-last_activity: "2026-05-04 — Completed 04-02: PortfolioSchema + computeMetrics + normalizeTo100 + fmtCHF + parsePortfolioCsv (44 tests, 6 commits, ~4min)"
+status: Server-side persistence layer landed — save_portfolio plpgsql RPC (atomic upsert + DELETE/INSERT items), savePortfolio + deletePortfolio Server Actions, queries module, real service-role test helpers, RPC round-trip test 2/2 green; ready for Plan 04 builder UI
+stopped_at: Completed 04-03-server-actions-rpc-PLAN.md
+last_updated: "2026-05-04T19:10:49.397Z"
+last_activity: "2026-05-04 — Completed 04-03: save_portfolio RPC + Server Actions + queries + helpers (4 commits, 194 unit tests green, ~6min)"
 progress:
   total_phases: 7
   completed_phases: 3
   total_plans: 22
-  completed_plans: 18
-  percent: 82
+  completed_plans: 19
+  percent: 86
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Position
 
 Phase: 4 of 7 IN PROGRESS (Portfolio Builder)
-Plan: 2 of 6 in Phase 4 (04-02 pure libs + schema COMPLETE)
-Status: Pure-library and shared Zod schema layer landed — PortfolioSchema, computeMetrics, normalizeTo100, fmtCHF, parsePortfolioCsv all unit-tested (44/44 green); ready for Plan 03 server actions
-Last activity: 2026-05-04 — Completed 04-02: PortfolioSchema + computeMetrics + normalizeTo100 + fmtCHF + parsePortfolioCsv (44 tests, 6 commits, ~4min)
+Plan: 3 of 6 in Phase 4 (04-03 server-actions + RPC COMPLETE)
+Status: Server-side persistence layer landed — save_portfolio plpgsql RPC (atomic upsert + DELETE/INSERT items), savePortfolio + deletePortfolio Server Actions, queries module, real service-role test helpers, RPC round-trip test 2/2 green; ready for Plan 04 builder UI
+Last activity: 2026-05-04 — Completed 04-03: save_portfolio RPC + Server Actions + queries + helpers (4 commits, 194 unit tests green, ~6min)
 
-Progress: [████████░░] 82%
+Progress: [█████████░] 86%
 
 ## Performance Metrics
 
@@ -69,6 +69,7 @@ Progress: [████████░░] 82%
 | Phase 03-market-data-pipeline P10 | 90min | 3 tasks | 2 files |
 | Phase 04-portfolio-builder P01 | 10min | 3 tasks | 25 files |
 | Phase 04-portfolio-builder P02 | 4min | 3 tasks | 10 files |
+| Phase 04-portfolio-builder P03 | 6min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -147,6 +148,10 @@ Progress: [████████░░] 82%
 - [Phase 04-portfolio-builder]: fmtCHF spec uses minimumFractionDigits:0 + maximumFractionDigits:2 — single-decimal inputs render as '.5', not '.50'; 2dp truncation locked via 10000.55 test case
 - [Phase 04-portfolio-builder]: parsePortfolioCsv reads File via file.text() before papaparse — direct File input requires browser FileReader/FileReaderSync absent in vitest Node env; string path is also correct in browsers
 - [Phase 04-portfolio-builder]: computeMetrics: items absent from meta map silently skipped (not pushed to missing lists); only items with meta entries containing null counts qualify as 'missing' for downstream UI footnotes
+- [Phase 04-portfolio-builder]: save_portfolio RPC is SECURITY INVOKER — RLS keeps applying inside function body; impersonation rejected by user_id WITH CHECK policy
+- [Phase 04-portfolio-builder]: Server Actions never call redirect() — return discriminated tuple {ok,id} and let caller navigate; keeps actions testable (mirrors RESEARCH Pitfall 5)
+- [Phase 04-portfolio-builder]: deletePortfolio re-queries post-DELETE to detect RLS silent-fail (non-owner DELETE returns 0 rows without error)
+- [Phase 04-portfolio-builder]: supabase.rpc + chained .select(string) cast via 'as never'/'as unknown as' — Database.public.Functions block empty in src/types/database.ts; regenerating Postgres types deferred to Phase 6+
 
 ### Pending Todos
 
@@ -165,6 +170,6 @@ Progress: [████████░░] 82%
 
 ## Session Continuity
 
-Last session: 2026-05-04T19:00:28.770Z
-Stopped at: Completed 04-02-pure-libs-and-schema-PLAN.md
+Last session: 2026-05-04T19:10:49.393Z
+Stopped at: Completed 04-03-server-actions-rpc-PLAN.md
 Resume file: None
