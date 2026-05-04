@@ -81,7 +81,14 @@ Plans:
   3. User can see the weighted total expense ratio (TER) and estimated annual dividend income for their portfolio
   4. User can start from a built-in template (e.g., "Classic 60/40", "All-World") that pre-fills instruments and weights
   5. User can import a portfolio allocation from a CSV file
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 04-01-wave0-scaffolds-PLAN.md — Wave 0: deps, shadcn primitives, migrations 00004 (templates) + 00005 (ETF metadata), test stubs
+- [ ] 04-02-pure-libs-and-schema-PLAN.md — Shared Zod schema + pure libs (computeMetrics, normalizeTo100, fmtCHF, parsePortfolioCsv)
+- [ ] 04-03-server-actions-rpc-PLAN.md — Migration 00006 (save_portfolio RPC) + Server Actions + queries module + test helper
+- [ ] 04-04-builder-components-PLAN.md — PortfolioBuilder, InstrumentCombobox, WeightedMetricsStrip, TotalBadge + /api/instruments/resolve
+- [ ] 04-05-pages-and-templates-PLAN.md — List/new/edit pages + delete + template picker + integration tests + manual checkpoint
+- [ ] 04-06-csv-import-PLAN.md — CSV import dialog + preview screen + /api/instruments/csv-resolve + manual checkpoint
 
 ### Phase 5: Backtesting Engine
 **Goal**: Users can run a historical backtest on any saved portfolio and see a full equity curve, annual return bars, and core performance metrics — all in CHF
@@ -124,7 +131,7 @@ Plans:
 | 1. Foundation | 3/3 | Complete | 2026-04-04 |
 | 2. App Shell & Design System | 1/3 | In Progress|  |
 | 3. Market Data Pipeline | 10/10 | Complete   | 2026-05-04 |
-| 4. Portfolio Builder | 0/TBD | Not started | - |
+| 4. Portfolio Builder | 0/6 | Not started | - |
 | 5. Backtesting Engine | 0/TBD | Not started | - |
 | 6. Projections | 0/TBD | Not started | - |
 | 7. Portfolio Comparison | 0/TBD | Not started | - |
