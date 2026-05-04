@@ -43,11 +43,21 @@ test.describe('PORT-01: delete portfolio', () => {
       page.getByRole('alertdialog').getByText(/Cancel Delete Target/i),
     ).toBeVisible()
 
-    // Click Cancel
-    await page.getByRole('button', { name: /^Cancel$/i }).click()
+    // Click Cancel inside the dialog
+    await page
+      .getByRole('alertdialog')
+      .getByRole('button', { name: /^Cancel$/i })
+      .click()
 
-    // Portfolio still in list
-    await expect(page.getByText('Cancel Delete Target')).toBeVisible()
+    // Wait for the dialog to close before re-asserting on the row.
+    await expect(page.getByRole('alertdialog')).toHaveCount(0, {
+      timeout: 5_000,
+    })
+
+    // Portfolio still in list (row is unique now that the dialog is gone)
+    await expect(
+      page.getByTestId('portfolios-list').getByText('Cancel Delete Target'),
+    ).toBeVisible()
 
     // Cleanup
     const sb = getServiceClient()

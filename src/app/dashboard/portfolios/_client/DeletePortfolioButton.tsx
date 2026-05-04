@@ -46,24 +46,20 @@ export function DeletePortfolioButton({
   const [open, setOpen] = React.useState(false)
   const [isPending, startTransition] = React.useTransition()
 
-  const handleDelete = React.useCallback(
-    (e?: React.MouseEvent) => {
-      if (e) e.stopPropagation()
-      const fd = new FormData()
-      fd.append('id', id)
-      startTransition(async () => {
-        const r = await deletePortfolio(fd)
-        if (r.ok) {
-          toast.success('Portfolio deleted')
-          setOpen(false)
-          router.refresh()
-        } else {
-          toast.error(r.error)
-        }
-      })
-    },
-    [id, router],
-  )
+  const handleDelete = React.useCallback(() => {
+    const fd = new FormData()
+    fd.append('id', id)
+    startTransition(async () => {
+      const r = await deletePortfolio(fd)
+      if (r.ok) {
+        toast.success('Portfolio deleted')
+        setOpen(false)
+        router.refresh()
+      } else {
+        toast.error(r.error)
+      }
+    })
+  }, [id, router])
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
@@ -74,7 +70,6 @@ export function DeletePortfolioButton({
             variant="ghost"
             size="icon-sm"
             aria-label={`Delete ${name}`}
-            onClick={(e) => e.stopPropagation()}
           >
             <Trash2 />
           </Button>
@@ -88,15 +83,10 @@ export function DeletePortfolioButton({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel
-            onClick={(e) => e.stopPropagation()}
-            disabled={isPending}
-          >
-            Cancel
-          </AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
-            onClick={(e) => handleDelete(e)}
+            onClick={handleDelete}
             disabled={isPending}
             aria-busy={isPending}
           >

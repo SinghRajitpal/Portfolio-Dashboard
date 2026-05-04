@@ -108,7 +108,10 @@ export function PortfolioBuilder({
         investment_amount: defaultInvestmentAmount,
         items: [],
       } as PortfolioInput),
-    mode: 'onChange',
+    // 'all' so isValid is computed both on mount and on every change —
+    // critical for the template-seed flow where the form is pre-filled
+    // with valid data and the user clicks Save without making a change.
+    mode: 'all',
   })
 
   const {
