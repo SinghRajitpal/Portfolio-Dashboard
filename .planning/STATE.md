@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in-progress
-stopped_at: Completed 04-01-wave0-scaffolds-PLAN.md
-last_updated: "2026-05-04T18:53:37.893Z"
-last_activity: "2026-05-04 — Completed 04-01: Phase 4 deps + shadcn primitives + 3 migrations (templates/metadata/INSERT-RLS) + 13 stub test files"
+status: Pure-library and shared Zod schema layer landed — PortfolioSchema, computeMetrics, normalizeTo100, fmtCHF, parsePortfolioCsv all unit-tested (44/44 green); ready for Plan 03 server actions
+stopped_at: Completed 04-02-pure-libs-and-schema-PLAN.md
+last_updated: "2026-05-04T19:00:51.808Z"
+last_activity: "2026-05-04 — Completed 04-02: PortfolioSchema + computeMetrics + normalizeTo100 + fmtCHF + parsePortfolioCsv (44 tests, 6 commits, ~4min)"
 progress:
   total_phases: 7
   completed_phases: 3
   total_plans: 22
-  completed_plans: 17
-  percent: 77
+  completed_plans: 18
+  percent: 82
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Position
 
 Phase: 4 of 7 IN PROGRESS (Portfolio Builder)
-Plan: 1 of 6 in Phase 4 (04-01 wave0 scaffolds COMPLETE)
-Status: Wave 0 scaffolding landed — deps installed, shadcn primitives + form wrapper, 3 migrations applied, 13 stub test files green
-Last activity: 2026-05-04 — Completed 04-01: Phase 4 deps + shadcn primitives + 3 migrations (templates/metadata/INSERT-RLS) + 13 stub test files
+Plan: 2 of 6 in Phase 4 (04-02 pure libs + schema COMPLETE)
+Status: Pure-library and shared Zod schema layer landed — PortfolioSchema, computeMetrics, normalizeTo100, fmtCHF, parsePortfolioCsv all unit-tested (44/44 green); ready for Plan 03 server actions
+Last activity: 2026-05-04 — Completed 04-02: PortfolioSchema + computeMetrics + normalizeTo100 + fmtCHF + parsePortfolioCsv (44 tests, 6 commits, ~4min)
 
-Progress: [████████░░] 77%
+Progress: [████████░░] 82%
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Progress: [████████░░] 77%
 | Phase 03-market-data-pipeline P09 | 7min | 2 tasks | 6 files |
 | Phase 03-market-data-pipeline P10 | 90min | 3 tasks | 2 files |
 | Phase 04-portfolio-builder P01 | 10min | 3 tasks | 25 files |
+| Phase 04-portfolio-builder P02 | 4min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -143,6 +144,9 @@ Progress: [████████░░] 77%
 - [Phase 04-portfolio-builder]: Templates use actually-seeded ticker analogues (VTI.US/AGG.US/IWDA.LSE/BND.US/GLD.US/EEM.US); plan-referenced VT/TLT/IEI/DJP not present in v1 seed
 - [Phase 04-portfolio-builder]: Wave 0 stub discipline: vitest it.todo + Playwright test.skip keep runners green while reserving file paths for downstream verify blocks; no RTL/jsdom installed
 - [Phase 04-portfolio-builder]: Migration 00007 for instruments INSERT RLS gated on data_source='resolved' — confines user inserts to /api/instruments/resolve, blocks impersonation of pipeline data sources
+- [Phase 04-portfolio-builder]: fmtCHF spec uses minimumFractionDigits:0 + maximumFractionDigits:2 — single-decimal inputs render as '.5', not '.50'; 2dp truncation locked via 10000.55 test case
+- [Phase 04-portfolio-builder]: parsePortfolioCsv reads File via file.text() before papaparse — direct File input requires browser FileReader/FileReaderSync absent in vitest Node env; string path is also correct in browsers
+- [Phase 04-portfolio-builder]: computeMetrics: items absent from meta map silently skipped (not pushed to missing lists); only items with meta entries containing null counts qualify as 'missing' for downstream UI footnotes
 
 ### Pending Todos
 
@@ -161,6 +165,6 @@ Progress: [████████░░] 77%
 
 ## Session Continuity
 
-Last session: 2026-05-04T18:53:37.888Z
-Stopped at: Completed 04-01-wave0-scaffolds-PLAN.md
+Last session: 2026-05-04T19:00:28.770Z
+Stopped at: Completed 04-02-pure-libs-and-schema-PLAN.md
 Resume file: None
