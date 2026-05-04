@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Reusable PortfolioBuilder client component shipped — RHF + zod, 5 client components + 1 pure helper, /api/instruments/resolve route returning { id, meta }, mergedMeta extension pattern eliminates Plan 05 post-hoc patching; ready for Plan 05 pages and templates
-stopped_at: Completed 04-04-builder-components-PLAN.md
-last_updated: "2026-05-04T19:11:56.715Z"
-last_activity: "2026-05-04 — Completed 04-04: groupSearchResults + /api/instruments/resolve + InstrumentCombobox + InstrumentRow + TotalBadge + WeightedMetricsStrip + PortfolioBuilder (4 commits, 192 unit tests green, ~7min)"
+status: Phase 4 portfolio CRUD + templates end-to-end — 3 Server Component pages + 5 client wrappers wired to Plan 03 actions/queries; 6 Wave 0 stub specs converted to real Playwright tests (18 passed); migration 00008 closes RLS gap for template_instruments reads; manual UX verified by user. Only PORT-08 (CSV import, Plan 06) remaining.
+stopped_at: Completed 04-05-pages-and-templates-PLAN.md
+last_updated: "2026-05-04T21:01:54.672Z"
+last_activity: "2026-05-04 — Completed 04-05: list/new/edit pages + 5 client wrappers + 6 Playwright spec conversions + RLS migration 00008 (4 commits, 18 Playwright passed, ~110min)"
 progress:
   total_phases: 7
   completed_phases: 3
   total_plans: 22
-  completed_plans: 21
-  percent: 91
+  completed_plans: 22
+  percent: 95
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Position
 
 Phase: 4 of 7 IN PROGRESS (Portfolio Builder)
-Plan: 4 of 6 in Phase 4 (04-04 builder-components COMPLETE)
-Status: Reusable PortfolioBuilder client component shipped — RHF + zod, 5 client components + 1 pure helper, /api/instruments/resolve route returning { id, meta }, mergedMeta extension pattern eliminates Plan 05 post-hoc patching; ready for Plan 05 pages and templates
-Last activity: 2026-05-04 — Completed 04-04: groupSearchResults + /api/instruments/resolve + InstrumentCombobox + InstrumentRow + TotalBadge + WeightedMetricsStrip + PortfolioBuilder (4 commits, 192 unit tests green, ~7min)
+Plan: 5 of 6 in Phase 4 (04-05 pages-and-templates COMPLETE)
+Status: Phase 4 portfolio CRUD + templates end-to-end — 3 Server Component pages + 5 client wrappers wired to Plan 03 actions/queries; 6 Wave 0 stub specs converted to real Playwright tests (18 passed); migration 00008 closes RLS gap for template_instruments reads; manual UX verified by user. Only PORT-08 (CSV import, Plan 06) remaining.
+Last activity: 2026-05-04 — Completed 04-05: list/new/edit pages + 5 client wrappers + 6 Playwright spec conversions + RLS migration 00008 (4 commits, 18 Playwright passed, ~110min)
 
-Progress: [█████████░] 91%
+Progress: [█████████▌] 95%
 
 ## Performance Metrics
 
@@ -71,6 +71,7 @@ Progress: [█████████░] 91%
 | Phase 04-portfolio-builder P02 | 4min | 3 tasks | 10 files |
 | Phase 04-portfolio-builder P03 | 6min | 3 tasks | 5 files |
 | Phase 04-portfolio-builder P04 | 7min | 4 tasks | 10 files |
+| Phase 04-portfolio-builder PP05 | 110min | 4 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -157,6 +158,10 @@ Progress: [█████████░] 91%
 - [Phase 04-portfolio-builder]: Plan 04-04 builder: PortfolioBuilder owns local mergedMeta state seeded from props.instrumentsMeta and extended in-handler on every combobox onSelect — WeightedMetricsStrip subscribes to mergedMeta, not props
 - [Phase 04-portfolio-builder]: Plan 04-04 builder: typed Database client narrows multi-column instruments select-after-upsert to never; route casts createClient() to SupabaseClient (cache-prices.ts precedent) — also affects Plan 04-03 _queries.ts (deferred)
 - [Phase 04-portfolio-builder]: Plan 04-04 builder: InstrumentCombobox debounces 250ms via setTimeout + AbortController in refs (no useDebouncedCallback dep); DataError surfacing rate_limit→toast / transient→inline / not_found→empty / invalid_input→inline
+- [Phase 04-portfolio-builder]: Plan 04-05: Migration 00008 added portfolio_instruments SELECT policy for template-owned rows (is_template=true) — closes RLS gap that hid template item compositions from the picker preview and seeded builder
+- [Phase 04-portfolio-builder]: Plan 04-05: PortfolioBuilder RHF mode switched from 'onChange' to 'all' — template-seeded forms now validate on mount so Save enables immediately when seeded sum=100
+- [Phase 04-portfolio-builder]: Plan 04-05: PortfoliosListClient uses overlay-link pattern (row-wide Link beneath, absolutely-positioned Delete button above with stopPropagation) — avoids invalid nested interactive elements while keeping row click → edit and delete click → confirm
+- [Phase 04-portfolio-builder]: Plan 04-05: Import CSV menu item rendered disabled (not hidden) per CONTEXT — keeps NewPortfolioMenu shape stable for Plan 06 to enable in place
 
 ### Pending Todos
 
@@ -175,6 +180,6 @@ Progress: [█████████░] 91%
 
 ## Session Continuity
 
-Last session: 2026-05-04T19:11:56.710Z
-Stopped at: Completed 04-04-builder-components-PLAN.md
+Last session: 2026-05-04T21:01:29.536Z
+Stopped at: Completed 04-05-pages-and-templates-PLAN.md
 Resume file: None

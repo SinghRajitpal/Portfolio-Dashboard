@@ -83,11 +83,11 @@ Plans:
   5. User can import a portfolio allocation from a CSV file
 **Plans**: 6 plans
 Plans:
-- [ ] 04-01-wave0-scaffolds-PLAN.md — Wave 0: deps, shadcn primitives, migrations 00004 (templates) + 00005 (ETF metadata), test stubs
-- [ ] 04-02-pure-libs-and-schema-PLAN.md — Shared Zod schema + pure libs (computeMetrics, normalizeTo100, fmtCHF, parsePortfolioCsv)
-- [ ] 04-03-server-actions-rpc-PLAN.md — Migration 00006 (save_portfolio RPC) + Server Actions + queries module + test helper
-- [ ] 04-04-builder-components-PLAN.md — PortfolioBuilder, InstrumentCombobox, WeightedMetricsStrip, TotalBadge + /api/instruments/resolve
-- [ ] 04-05-pages-and-templates-PLAN.md — List/new/edit pages + delete + template picker + integration tests + manual checkpoint
+- [x] 04-01-wave0-scaffolds-PLAN.md — Wave 0: deps, shadcn primitives, migrations 00004 (templates) + 00005 (ETF metadata), test stubs
+- [x] 04-02-pure-libs-and-schema-PLAN.md — Shared Zod schema + pure libs (computeMetrics, normalizeTo100, fmtCHF, parsePortfolioCsv)
+- [x] 04-03-server-actions-rpc-PLAN.md — Migration 00006 (save_portfolio RPC) + Server Actions + queries module + test helper
+- [x] 04-04-builder-components-PLAN.md — PortfolioBuilder, InstrumentCombobox, WeightedMetricsStrip, TotalBadge + /api/instruments/resolve
+- [x] 04-05-pages-and-templates-PLAN.md — List/new/edit pages + delete + template picker + integration tests + manual checkpoint
 - [ ] 04-06-csv-import-PLAN.md — CSV import dialog + preview screen + /api/instruments/csv-resolve + manual checkpoint
 
 ### Phase 5: Backtesting Engine
@@ -131,7 +131,7 @@ Plans:
 | 1. Foundation | 3/3 | Complete | 2026-04-04 |
 | 2. App Shell & Design System | 1/3 | In Progress|  |
 | 3. Market Data Pipeline | 10/10 | Complete   | 2026-05-04 |
-| 4. Portfolio Builder | 0/6 | Not started | - |
+| 4. Portfolio Builder | 5/6 | In Progress | - |
 | 5. Backtesting Engine | 0/TBD | Not started | - |
 | 6. Projections | 0/TBD | Not started | - |
 | 7. Portfolio Comparison | 0/TBD | Not started | - |
