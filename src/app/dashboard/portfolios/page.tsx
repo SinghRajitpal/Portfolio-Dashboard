@@ -1,8 +1,20 @@
-export default function PortfoliosPage() {
+import { listPortfolios, listTemplates } from './_queries'
+import { PortfoliosListClient } from './_client/PortfoliosListClient'
+import { NewPortfolioMenu } from './_client/NewPortfolioMenu'
+
+export default async function PortfoliosPage() {
+  const [portfolios, templates] = await Promise.all([
+    listPortfolios(),
+    listTemplates(),
+  ])
+
   return (
-    <main className="flex-1 max-w-screen-2xl mx-auto w-full px-6 py-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Portfolios</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Coming soon.</p>
+    <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-8 space-y-8">
+      <header className="flex items-center justify-between">
+        <h1 className="text-3xl font-medium tracking-tight">Portfolios</h1>
+        <NewPortfolioMenu templates={templates} />
+      </header>
+      <PortfoliosListClient portfolios={portfolios} />
     </main>
   )
 }
