@@ -1,9 +1,36 @@
-import { describe, it } from 'vitest'
+import { describe, it, expect } from 'vitest'
+import { fmtCHF } from './chf-format'
 
 describe('fmtCHF (PORT-04)', () => {
-  it.todo("fmtCHF(10000) returns 'CHF 10’000' or 'CHF 10\\'000' (Swiss apostrophe)")
-  it.todo("fmtCHF(10000.5) returns 'CHF 10\\'000.50'")
-  it.todo("fmtCHF(1234567.89) returns 'CHF 1\\'234\\'567.89'")
-  it.todo('fmtCHF(0) returns CHF 0')
-  it.todo('handles negative amounts')
+  it("fmtCHF(10000) contains 'CHF', '10', and '000' with Swiss separator (’ or ')", () => {
+    const s = fmtCHF(10000)
+    expect(s).toMatch(/CHF\s*10[’']000/u)
+  })
+
+  it("fmtCHF(10000.5) ends with '.50'", () => {
+    const s = fmtCHF(10000.5)
+    expect(s).toMatch(/\.50$/)
+    expect(s).toMatch(/10[’']000\.50/u)
+  })
+
+  it("fmtCHF(1234567.89) contains two Swiss separators", () => {
+    const s = fmtCHF(1234567.89)
+    // Two thousand-separators between the digits
+    const sepCount = (s.match(/[’']/gu) ?? []).length
+    expect(sepCount).toBe(2)
+    expect(s).toMatch(/1[’']234[’']567/u)
+  })
+
+  it('fmtCHF(0) contains "0" and "CHF"', () => {
+    const s = fmtCHF(0)
+    expect(s).toContain('CHF')
+    expect(s).toContain('0')
+  })
+
+  it('fmtCHF(-100) contains a negative indicator', () => {
+    const s = fmtCHF(-100)
+    // Intl may use '-', '−' (U+2212), or wrap in parens; assert one of these signals
+    expect(/[\-−]/.test(s) || /\(.+\)/.test(s)).toBe(true)
+    expect(s).toContain('100')
+  })
 })
