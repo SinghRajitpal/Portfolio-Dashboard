@@ -96,9 +96,12 @@ export class YahooProvider implements IMarketDataProvider {
     const period1 = opts.from
       ? Math.floor(Date.parse(opts.from) / 1000)
       : 0
-    const period2 = opts.to
+    let period2 = opts.to
       ? Math.floor(Date.parse(opts.to) / 1000)
       : Math.floor(Date.now() / 1000)
+    // Yahoo chart() treats period2 as exclusive — requires period2 > period1.
+    // Callers passing from===to (e.g. cron asking for "today") need the window expanded.
+    if (period2 <= period1) period2 = period1 + 86400
 
     const retryOpts: RetryOpts = { maxAttempts: 4, baseDelayMs: this.baseDelayMs }
 
@@ -148,9 +151,10 @@ export class YahooProvider implements IMarketDataProvider {
     const period1 = opts.from
       ? Math.floor(Date.parse(opts.from) / 1000)
       : 0
-    const period2 = opts.to
+    let period2 = opts.to
       ? Math.floor(Date.parse(opts.to) / 1000)
       : Math.floor(Date.now() / 1000)
+    if (period2 <= period1) period2 = period1 + 86400
 
     const retryOpts: RetryOpts = { maxAttempts: 4, baseDelayMs: this.baseDelayMs }
 

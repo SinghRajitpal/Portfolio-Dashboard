@@ -144,6 +144,16 @@ describe('YahooProvider', () => {
       expect(opts.period1).toBe(0)
     })
 
+    it('Test 5b: when from === to (single-day request), expands period2 = period1 + 86400 since Yahoo period2 is exclusive', async () => {
+      const client = makeClient()
+      const provider = new YahooProvider({ client })
+      await provider.getEod('SPY.US', { from: '2024-06-10', to: '2024-06-10' })
+      const call = client.chart.mock.calls[0]
+      const opts = call[1] as { period1: number; period2: number }
+      expect(opts.period1).toBe(1717977600)
+      expect(opts.period2).toBe(opts.period1 + 86400)
+    })
+
     it('Test 6: does NOT pass range=max to chart call', async () => {
       const client = makeClient()
       const provider = new YahooProvider({ client })
