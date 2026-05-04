@@ -66,10 +66,10 @@ Plans:
 - [x] 03-04-eodhd-provider-and-cache-PLAN.md — EODHDProvider + cache-first getPricesForTicker (DATA-01, DATA-03, DATA-04) [SUPERSEDED for DATA-01 by Plans 07-10]
 - [x] 03-05-search-route-and-openfigi-PLAN.md — POST /api/instruments/search + OpenFIGI ISIN cache (DATA-05)
 - [x] 03-06-cron-seed-and-smoke-PLAN.md — Vercel Cron daily refresh + seed script + phase smoke test [smoke run deferred to Plan 10]
-- [ ] 03-07-yahoo-provider-PLAN.md — Gap closure: YahooProvider implementing IMarketDataProvider + symbol mapper (.LSE→.L) [DATA-01]
-- [ ] 03-08-stooq-importer-PLAN.md — Gap closure: Stooq CSV bulk historical importer + STOOQ_API_KEY user setup [DATA-01]
-- [ ] 03-09-provider-swap-PLAN.md — Gap closure: swap default provider EODHD→Yahoo at 3 sites; IQQA.SW→SSAC.SW; cron supports LSE [DATA-01, DATA-03]
-- [ ] 03-10-reseed-and-verify-PLAN.md — Gap closure: live re-seed + smoke test against prod DB + Vercel cron production verification [DATA-01, DATA-05]
+- [x] 03-07-yahoo-provider-PLAN.md — Gap closure: YahooProvider implementing IMarketDataProvider + symbol mapper (.LSE→.L) [DATA-01]
+- [x] 03-08-stooq-importer-PLAN.md — Gap closure: Stooq CSV bulk historical importer + STOOQ_API_KEY user setup [DATA-01]
+- [x] 03-09-provider-swap-PLAN.md — Gap closure: swap default provider EODHD→Yahoo at 3 sites; IQQA.SW→SSAC.SW; cron supports LSE [DATA-01, DATA-03]
+- [x] 03-10-reseed-and-verify-PLAN.md — Gap closure: live re-seed + smoke test against prod DB + Vercel cron production verification [DATA-01, DATA-05]
 
 ### Phase 4: Portfolio Builder
 **Goal**: Users can create, configure, and save named portfolios with validated instrument weights, and view their portfolio's weighted expense ratio and dividend income
@@ -123,7 +123,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-04-04 |
 | 2. App Shell & Design System | 1/3 | In Progress|  |
-| 3. Market Data Pipeline | 10/10 | Complete   | 2026-05-03 |
+| 3. Market Data Pipeline | 10/10 | Complete   | 2026-05-04 |
 | 4. Portfolio Builder | 0/TBD | Not started | - |
 | 5. Backtesting Engine | 0/TBD | Not started | - |
 | 6. Projections | 0/TBD | Not started | - |

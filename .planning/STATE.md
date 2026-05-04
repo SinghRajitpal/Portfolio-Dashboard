@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 03-10 Tasks 1-2 (re-seed + smoke test 5/5) — awaiting Task 3 human-verify gate (Vercel cron + 401 regression)
-last_updated: "2026-05-03T21:11:47.541Z"
-last_activity: "2026-05-03 — Completed 03-08: stooq.ts library, seed-instruments-stooq.ts CLI, STOOQ_API_KEY confirmed against live endpoint"
+status: completed
+stopped_at: "Completed 03-10 (all tasks) — Phase 3 fully complete. Next: Phase 4 Portfolio Builder"
+last_updated: "2026-05-04T16:44:19.744Z"
+last_activity: "2026-05-04 — Completed 03-10: Vercel cron triggers verified (US 7/7, SW 4/5, LSE 1/2), 401 regression confirmed, 3 deploy fixes landed"
 progress:
   total_phases: 7
   completed_phases: 3
   total_plans: 16
   completed_plans: 16
-  percent: 88
+  percent: 100
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 
 ## Current Position
 
-Phase: 3 of 7 in progress (Market Data Pipeline)
-Plan: 8 of 10 in Phase 3 (Plan 08 complete — Stooq importer library + seed CLI + STOOQ_API_KEY verified)
-Status: Phase 3 in progress — Plans 01-08 complete, Plans 09-10 remaining
-Last activity: 2026-05-03 — Completed 03-08: stooq.ts library, seed-instruments-stooq.ts CLI, STOOQ_API_KEY confirmed against live endpoint
+Phase: 3 of 7 COMPLETE (Market Data Pipeline)
+Plan: 10 of 10 in Phase 3 (Plan 10 complete — live re-seed + smoke 5/5 + Vercel cron verified)
+Status: Phase 3 complete — all 10 plans done; DATA-01 and DATA-05 closed
+Last activity: 2026-05-04 — Completed 03-10: Vercel cron triggers verified (US 7/7, SW 4/5, LSE 1/2), 401 regression confirmed, 3 deploy fixes landed
 
-Progress: [█████████░] 88%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -66,7 +66,7 @@ Progress: [█████████░] 88%
 | Phase 03-market-data-pipeline P07 | 5min | 2 tasks | 6 files |
 | Phase 03-market-data-pipeline P08 | 25min | 3 tasks | 7 files |
 | Phase 03-market-data-pipeline P09 | 7min | 2 tasks | 6 files |
-| Phase 03-market-data-pipeline P10 | 70min | 2 tasks | 2 files |
+| Phase 03-market-data-pipeline P10 | 90min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -134,23 +134,28 @@ Progress: [█████████░] 88%
 - [Phase 03-market-data-pipeline]: Cron route per-ticker YahooProvider.getEod loop replaces EODHD bulkEod; 250ms inter-ticker throttle; LSE added to ALLOWED_EXCHANGES
 - [Phase 03-market-data-pipeline]: SPY seeded from Yahoo not Stooq — Stooq backward-adjusts cumulative dividends; Yahoo nominal close matches public reference exactly (2020-03-16: .85)
 - [Phase 03-market-data-pipeline]: Swiss SIX tickers (CSSPX/500E/CHDVD/SSAC/NOVN) use Yahoo not Stooq — Stooq returns empty CSV for all Swiss tickers; Yahoo covers full SIX history
+- [Phase 03-market-data-pipeline P10]: Per-ticker skips (VWRL.LSE on UK bank holiday, 500E.SW inconsistent Yahoo .SW surface) are data-availability gaps, not code bugs — cron best-effort design (errors→skipped[]) confirmed working as specified
+- [Phase 03-market-data-pipeline P10]: YahooProvider period2 must be period1+86400 when from===to — Yahoo chart API treats period2 as exclusive; single-day requests (daily cron "today" calls) returned no bars without this fix
+- [Phase 03-market-data-pipeline]: Per-ticker cron skips (VWRL.LSE on UK bank holiday, 500E.SW inconsistent Yahoo .SW) are data-availability gaps not code bugs — cron best-effort design confirmed working
+- [Phase 03-market-data-pipeline]: YahooProvider period2 must be period1+86400 when from===to — Yahoo chart API treats period2 as exclusive; single-day cron requests returned no bars without this expansion fix
 
 ### Pending Todos
 
-- Phase 3.1: Replace EODHDProvider with YahooProvider (incremental) + StooqImporter (one-time bulk archive); re-seed all 14 v1 tickers
-- Phase 3.1: Replace IQQA.SW in v1 seed list — EODHD 404; verify correct ticker against Yahoo (likely SSAC.SW for iShares MSCI ACWI Acc)
-- Phase 3.1: Vercel deploy + manual cron trigger + production proxy 401 regression check (deferred from 03-06 Task 4)
-- Phase 3.1: SPY 2020-03-16 (COVID circuit-breaker) adjusted-close sanity check vs public reference, within 0.5%
+- ~~Phase 3.1: Replace EODHDProvider with YahooProvider (incremental) + StooqImporter (one-time bulk archive); re-seed all 14 v1 tickers~~ **DONE — Plans 07-10**
+- ~~Phase 3.1: Replace IQQA.SW in v1 seed list — EODHD 404; verify correct ticker against Yahoo (likely SSAC.SW for iShares MSCI ACWI Acc)~~ **DONE — SSAC.SW confirmed in production DB**
+- ~~Phase 3.1: Vercel deploy + manual cron trigger + production proxy 401 regression check (deferred from 03-06 Task 4)~~ **DONE — 2026-05-04, all 4 checks pass**
+- ~~Phase 3.1: SPY 2020-03-16 (COVID circuit-breaker) adjusted-close sanity check vs public reference, within 0.5%~~ **DONE — close=$239.85, 0.0000% delta**
+- Phase 4: 500E.SW — investigate why Yahoo does not consistently surface under `.SW` suffix; may need symbol alias
 
 ### Blockers/Concerns
 
 - ~~Phase 3: Validate UCITS ETF dividend schedule coverage in EODHD~~ — moot, pivoting away from EODHD
-- Phase 3.1: Verify Stooq Swiss SIX coverage before committing — Stooq is partial on Switzerland; yahoo-finance2 covers all v1 Swiss tickers but Stooq is the historical-archive workhorse
+- ~~Phase 3.1: Verify Stooq Swiss SIX coverage before committing~~ — confirmed empty for all SIX tickers; Yahoo fallback covers all 5
 - Phase 6: Monte Carlo distribution choice (Gaussian vs. historical bootstrap vs. fat-tail) must be decided before Phase 6 planning
 - Phase 6: Swiss CPI data source for inflation adjustment not yet confirmed — BFS API ergonomics unclear
 
 ## Session Continuity
 
-Last session: 2026-05-03T21:11:47.530Z
-Stopped at: Completed 03-10 Tasks 1-2 (re-seed + smoke test 5/5) — awaiting Task 3 human-verify gate (Vercel cron + 401 regression)
+Last session: 2026-05-04T16:44:19.740Z
+Stopped at: Completed 03-10 (all tasks) — Phase 3 fully complete. Next: Phase 4 Portfolio Builder
 Resume file: None

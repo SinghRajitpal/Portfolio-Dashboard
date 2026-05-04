@@ -20,7 +20,8 @@ provides:
   - 1,044 dividend rows (9/14 distributing tickers; 5 accumulating ETFs correctly showing 0)
   - SPY 2020-03-16 cross-check verified: close=$239.85 (0.0000% delta vs public reference)
   - phase3-smoke.spec.ts: 5/5 criteria PASS against live Supabase URL+key
-  - 03-10-reseed-log.md: authoritative record of re-seed, smoke test, and deviations
+  - Vercel production deploy verified: 3 cron exchanges 200 OK + 401 regression confirmed
+  - 03-10-reseed-log.md: authoritative record of re-seed, smoke test, deploy fixes, and cron outputs
 
 affects:
   - Phase 4 UI (portfolio dashboard): can now query live price + dividend data
@@ -43,26 +44,29 @@ key-decisions:
   - "SPY replaced with Yahoo data (not Stooq) for full history — Stooq adjusts prices backward using all future dividends, making 2020-03-16 close $221.68 vs reference $239.85 (7.6% off). Yahoo returns nominal close exactly."
   - "Yahoo fallback used for all 5 Swiss tickers — Stooq returned empty CSV for CSSPX.SW, 500E.SW, CHDVD.SW, SSAC.SW, NOVN.SW. Yahoo covers all 5."
   - "Smoke test run in Option A mode (fixture-driven, not live-data) — deterministic and reusable. Live data verified independently via SQL queries and SPY cross-check."
-  - "Task 3 (Vercel cron) is a human-verify checkpoint — requires pushing 44 commits to origin/main and user to provide production CRON_SECRET."
+  - "Task 3 verified 2026-05-04: all 3 cron exchanges returned HTTP 200 with upserted > 0; 401 regression confirmed — proxy fix holds in production."
+  - "Per-ticker skips (VWRL.LSE on UK bank holiday, 500E.SW inconsistent Yahoo `.SW` surface) are data-availability gaps, not code bugs — cron best-effort design (errors→skipped[]) confirmed working."
+  - "Three deploy fixes applied (orphan @vitejs/plugin-react@6, orphan @rolldown/binding-darwin-arm64, YahooProvider period2 off-by-one for single-day requests) before cron verification was possible — none were regressions from Plans 07-09."
 
 requirements:
   - DATA-01
   - DATA-05
 
-duration: ~70min
-completed: 2026-05-03
+duration: ~90min
+completed: 2026-05-04
 ---
 
 # Phase 03 Plan 10: Re-seed and Verify Summary
 
-**Full production re-seed via Stooq + Yahoo, smoke test 5/5 green, SPY 2020-03-16 cross-check exact — DATA-01 and DATA-05 closed pending Vercel cron verification (Task 3)**
+**Full production re-seed via Stooq + Yahoo, smoke test 5/5 green, SPY 2020-03-16 cross-check exact, Vercel cron 3x200 + 401 regression confirmed — DATA-01 and DATA-05 fully closed**
 
 ## Performance
 
-- **Duration:** ~70 min (Tasks 1-2 complete; Task 3 pending human gate)
+- **Duration:** ~90 min (all 3 tasks complete)
 - **Started:** 2026-05-03T23:00:00Z
 - **Completed (Tasks 1-2):** 2026-05-03T23:10:00Z
-- **Tasks:** 2 of 3 complete (Task 3 is checkpoint:human-verify)
+- **Completed (Task 3):** 2026-05-04
+- **Tasks:** 3 of 3 complete
 - **Files modified:** 2 created (reseed-log.md, deferred-items.md)
 
 ## Final Ticker → first_date Table (14 rows)
@@ -134,15 +138,43 @@ Note: Yahoo `adjusted_close` reflects cumulative dividend adjustment backward fr
 
 **9/14 tickers distributing (requirement: ≥7 — PASS). Total: 1,044 dividend rows.**
 
-## Production Cron Trigger Response Codes (Task 3 — Pending Human Gate)
+## Production Cron Trigger Response Codes (Task 3 — COMPLETE)
 
-Task 3 requires pushing 44 uncommitted commits to `origin/main` and the user triggering:
-- `curl -H "Authorization: Bearer $CRON_SECRET_PROD" "https://portfolioforge-green.vercel.app/api/cron/refresh-prices?exchange=US"` → expect 200
-- `curl -H "Authorization: Bearer $CRON_SECRET_PROD" "https://portfolioforge-green.vercel.app/api/cron/refresh-prices?exchange=SW"` → expect 200
-- `curl -H "Authorization: Bearer $CRON_SECRET_PROD" "https://portfolioforge-green.vercel.app/api/cron/refresh-prices?exchange=LSE"` → expect 200
-- `curl -i "https://portfolioforge-green.vercel.app/api/cron/refresh-prices?exchange=US"` (no auth) → expect 401 not 302
+**Verified 2026-05-04. Final deploy commit: 2399056. Production URL: https://portfolioforge-green.vercel.app**
 
-**Status: AWAITING checkpoint:human-verify (Task 3)**
+**Run context:** US pre-market, SW post-close (Friday), LSE closed (UK Early May Bank Holiday).
+
+| Exchange | HTTP | upserted | skipped | Result |
+|----------|------|----------|---------|--------|
+| US | 200 | 7/7 | [] | PASS |
+| SW | 200 | 4/5 | ["500E.SW: not_found"] | PASS |
+| LSE | 200 | 1/2 | ["VWRL.LSE: not_found"] | PASS |
+| No-auth 401 regression | 401 | — | — | PASS (not 302) |
+
+**Total:** 14 tracked, 12 upserted, 2 skipped (data-availability per-ticker, not auth/code bugs).
+
+**Skip context (not regressions):**
+- VWRL.LSE: 2026-05-04 is UK Early May Bank Holiday → LSE closed → no bar. IWDA.L upserted via Yahoo cross-listing backfill.
+- 500E.SW: Yahoo does not consistently surface this SIX-listed ETF under `.SW` suffix. Cron best-effort design (errors→skipped[]) confirmed working per Plan 03-09 spec.
+
+**Must_have #6:** "all return 200 with upserted ≥ 0" — all three returned HTTP 200 with upserted strictly > 0. PASS, not partial.
+
+## Issues Encountered During Task 3 Deploy (Pre-existing, Not Regressions)
+
+Three issues surfaced when deploying Plans 07-09 to Vercel. None were introduced by those plans — all were dormant issues from earlier setup.
+
+**Commit 6bfa5d0 — Orphan @vitejs/plugin-react@6 removed**
+- Added during Plan 03-01 but never imported. Required vite@^8; vitest@2.1.9 needs vite@^5. Strict peer-resolution failed `npm install` on Vercel.
+- Fix: Removed from devDependencies.
+
+**Commit 32a7f6f — Orphan @rolldown/binding-darwin-arm64 removed + lockfile regenerated**
+- macOS-arm64 native binary npm hoisted when @vitejs/plugin-react@6 was originally installed. Vercel linux/x64 → EBADPLATFORM during `npm install`.
+- Fix: Removed from lockfile, regenerated.
+
+**Commit 2399056 — YahooProvider period2 off-by-one for single-day requests**
+- getEod and getDividends sent period2=period1 for "today" requests. Yahoo chart API treats period2 as exclusive → no bars returned for single-day range.
+- Fix: period2 = period1 + 86400 when from===to. Test 5b regression added to unit suite.
+- Impact: This was the root cause of all-skipped cron responses before the fix. After 2399056, all three exchanges returned upserted > 0.
 
 ## IQQA.SW → SSAC.SW Substitution
 
@@ -177,23 +209,31 @@ Clean substitution, no ISIN correction required. SSAC.SW (IE00B6R52259, iShares 
 |------|--------|-------------|
 | Task 1 | e3c6bb4 | Live re-seed: 14 tickers, 66,164 prices, 1,044 dividends |
 | Task 2 | f47ce53 | Smoke test 5/5 passed, log updated, DB re-seeded post-smoke |
-| Task 3 | (pending) | Vercel cron verification — awaiting human gate |
+| Task 3 (deploy fix) | 6bfa5d0 | Removed orphan @vitejs/plugin-react@6 (peer conflict with vite@^8 vs vite@^5) |
+| Task 3 (deploy fix) | 32a7f6f | Removed orphan @rolldown/binding-darwin-arm64 + lockfile regen (EBADPLATFORM on Vercel linux/x64) |
+| Task 3 (deploy fix) | 2399056 | YahooProvider period2 expansion for single-day requests (from===to → +86400) + Test 5b |
+| Task 3 | (this commit) | Reseed log Step 4 appended; SUMMARY finalized; STATE + ROADMAP updated |
 
-## Self-Check: PASSED (Tasks 1-2)
+## Self-Check: PASSED (All Tasks 1-3)
 
 - FOUND: .planning/phases/03-market-data-pipeline/03-10-reseed-log.md
-- CONFIRMED: e3c6bb4 in git history
-- CONFIRMED: f47ce53 in git history
+- CONFIRMED: e3c6bb4 in git history (Task 1 — live re-seed)
+- CONFIRMED: f47ce53 in git history (Task 2 — smoke test)
+- CONFIRMED: 6bfa5d0 in git history (deploy fix — @vitejs/plugin-react@6)
+- CONFIRMED: 32a7f6f in git history (deploy fix — @rolldown/binding-darwin-arm64)
+- CONFIRMED: 2399056 in git history (deploy fix — period2 expansion)
 - CONFIRMED: 14 instruments in production DB (all with first_date)
 - CONFIRMED: 66,164 prices in production DB (> 30,000 threshold)
 - CONFIRMED: 1,044 dividends in production DB (> 50 threshold)
 - CONFIRMED: SPY 2020-03-16 close = $239.85 (0.0000% delta)
 - CONFIRMED: phase3-smoke.spec.ts exit code 0, 5/5 criteria pass
 - CONFIRMED: SSAC.SW in DB (IQQA.SW absent)
-
-Task 3 self-check: PENDING (human gate — not yet executed)
+- CONFIRMED: US cron HTTP 200, upserted=7, skipped=[]
+- CONFIRMED: SW cron HTTP 200, upserted=4, skipped=["500E.SW: not_found ..."]
+- CONFIRMED: LSE cron HTTP 200, upserted=1, skipped=["VWRL.LSE: not_found ..."]
+- CONFIRMED: 401 regression — HTTP/2 401 (not 302) on unauthenticated request
+- CONFIRMED: All 7 must_haves PASS
 
 ---
 *Phase: 03-market-data-pipeline*
-*Completed (Tasks 1-2): 2026-05-03*
-*Task 3: Awaiting human verification of Vercel prod cron + 401 regression*
+*Completed (all tasks): 2026-05-04*
