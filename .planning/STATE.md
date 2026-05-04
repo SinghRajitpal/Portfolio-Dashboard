@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase 4 portfolio CRUD + templates end-to-end — 3 Server Component pages + 5 client wrappers wired to Plan 03 actions/queries; 6 Wave 0 stub specs converted to real Playwright tests (18 passed); migration 00008 closes RLS gap for template_instruments reads; manual UX verified by user. Only PORT-08 (CSV import, Plan 06) remaining.
-stopped_at: Completed 04-05-pages-and-templates-PLAN.md
-last_updated: "2026-05-04T21:01:54.672Z"
-last_activity: "2026-05-04 — Completed 04-05: list/new/edit pages + 5 client wrappers + 6 Playwright spec conversions + RLS migration 00008 (4 commits, 18 Playwright passed, ~110min)"
+status: completed
+stopped_at: Completed 04-06-csv-import-PLAN.md
+last_updated: "2026-05-04T21:23:24.849Z"
+last_activity: "2026-05-04 — Completed 04-06: CSV import end-to-end + 5 Playwright specs + StrictMode hydration fix (3 task commits, ~95min)"
 progress:
   total_phases: 7
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 22
   completed_plans: 22
   percent: 95
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 
 ## Current Position
 
-Phase: 4 of 7 IN PROGRESS (Portfolio Builder)
-Plan: 5 of 6 in Phase 4 (04-05 pages-and-templates COMPLETE)
-Status: Phase 4 portfolio CRUD + templates end-to-end — 3 Server Component pages + 5 client wrappers wired to Plan 03 actions/queries; 6 Wave 0 stub specs converted to real Playwright tests (18 passed); migration 00008 closes RLS gap for template_instruments reads; manual UX verified by user. Only PORT-08 (CSV import, Plan 06) remaining.
-Last activity: 2026-05-04 — Completed 04-05: list/new/edit pages + 5 client wrappers + 6 Playwright spec conversions + RLS migration 00008 (4 commits, 18 Playwright passed, ~110min)
+Phase: 4 of 7 COMPLETE (Portfolio Builder)
+Plan: 6 of 6 in Phase 4 (04-06 csv-import COMPLETE)
+Status: Phase 4 COMPLETE — CSV import shipped end-to-end (PORT-08): /api/instruments/csv-resolve batch endpoint classifies rows as matched/ambiguous/unresolved; CsvImportDialog parses + resolves + sessionStorage-handoffs; CsvPreviewClient renders banner-mode UX until all rows match, then hands off to PortfolioBuilder unchanged; Playwright spec 5/5 green (13.8s, including page.route-mocked ambiguity test). Manual UX checkpoint user-approved. All Phase 4 requirements green (PORT-01..08, META-01).
+Last activity: 2026-05-04 — Completed 04-06: CSV import end-to-end + 5 Playwright specs + StrictMode hydration fix (3 task commits, ~95min)
 
 Progress: [█████████▌] 95%
 
@@ -72,6 +72,7 @@ Progress: [█████████▌] 95%
 | Phase 04-portfolio-builder P03 | 6min | 3 tasks | 5 files |
 | Phase 04-portfolio-builder P04 | 7min | 4 tasks | 10 files |
 | Phase 04-portfolio-builder PP05 | 110min | 4 tasks | 15 files |
+| Phase 04-portfolio-builder P06 | 95min | 4 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -162,6 +163,10 @@ Progress: [█████████▌] 95%
 - [Phase 04-portfolio-builder]: Plan 04-05: PortfolioBuilder RHF mode switched from 'onChange' to 'all' — template-seeded forms now validate on mount so Save enables immediately when seeded sum=100
 - [Phase 04-portfolio-builder]: Plan 04-05: PortfoliosListClient uses overlay-link pattern (row-wide Link beneath, absolutely-positioned Delete button above with stopPropagation) — avoids invalid nested interactive elements while keeping row click → edit and delete click → confirm
 - [Phase 04-portfolio-builder]: Plan 04-05: Import CSV menu item rendered disabled (not hidden) per CONTEXT — keeps NewPortfolioMenu shape stable for Plan 06 to enable in place
+- [Phase 04-portfolio-builder]: Plan 04-06: sessionStorage UUID-keyed handoff for CSV dialog→preview state — URL params too small for resolved rows + multi-venue alternatives
+- [Phase 04-portfolio-builder]: Plan 04-06: never auto-pick venue on ambiguous CSV row — preview surfaces per-row Select with all alternatives; Save blocked until all matched (CONTEXT-locked, RESEARCH Pitfall 4)
+- [Phase 04-portfolio-builder]: Plan 04-06: CsvPreviewClient uses useRef one-shot guard for sessionStorage read+clear — Next 16/React 19 StrictMode dev double-invoke was clearing the key before commit
+- [Phase 04-portfolio-builder]: Plan 04-06: ambiguous-CSV Playwright spec uses page.route() mock for /api/instruments/csv-resolve — instruments.UNIQUE(ticker) blocks DB-seeded ambiguity; mocking keeps spec hermetic
 
 ### Pending Todos
 
@@ -180,6 +185,6 @@ Progress: [█████████▌] 95%
 
 ## Session Continuity
 
-Last session: 2026-05-04T21:01:29.536Z
-Stopped at: Completed 04-05-pages-and-templates-PLAN.md
+Last session: 2026-05-04T21:23:13.898Z
+Stopped at: Completed 04-06-csv-import-PLAN.md
 Resume file: None

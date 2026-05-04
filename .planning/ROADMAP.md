@@ -9,7 +9,7 @@ PortfolioForge is built in seven phases that follow a strict dependency order: d
 - [x] **Phase 1: Foundation** - Supabase schema, auth flow, and project scaffolding
 - [ ] **Phase 2: App Shell & Design System** - Application layout, navigation, dashboard skeleton, component library, and visual identity
 - [x] **Phase 3: Market Data Pipeline** - EODHD integration, FX rates, ISIN resolution, and cache layer (completed 2026-05-03)
-- [ ] **Phase 4: Portfolio Builder** - Portfolio CRUD, instrument search, weight validation, templates, and metadata display
+- [x] **Phase 4: Portfolio Builder** - Portfolio CRUD, instrument search, weight validation, templates, and metadata display (completed 2026-05-04)
 - [ ] **Phase 5: Backtesting Engine** - Core simulation loop, CHF conversion, DRIP, rebalancing, metrics, and charts
 - [ ] **Phase 6: Projections** - Scenario projections, Monte Carlo simulation, contribution modeling, and inflation adjustment
 - [ ] **Phase 7: Portfolio Comparison** - Side-by-side overlay, risk-return comparison, and correlation matrix
@@ -88,7 +88,7 @@ Plans:
 - [x] 04-03-server-actions-rpc-PLAN.md — Migration 00006 (save_portfolio RPC) + Server Actions + queries module + test helper
 - [x] 04-04-builder-components-PLAN.md — PortfolioBuilder, InstrumentCombobox, WeightedMetricsStrip, TotalBadge + /api/instruments/resolve
 - [x] 04-05-pages-and-templates-PLAN.md — List/new/edit pages + delete + template picker + integration tests + manual checkpoint
-- [ ] 04-06-csv-import-PLAN.md — CSV import dialog + preview screen + /api/instruments/csv-resolve + manual checkpoint
+- [x] 04-06-csv-import-PLAN.md — CSV import dialog + preview screen + /api/instruments/csv-resolve + manual checkpoint
 
 ### Phase 5: Backtesting Engine
 **Goal**: Users can run a historical backtest on any saved portfolio and see a full equity curve, annual return bars, and core performance metrics — all in CHF
@@ -131,7 +131,7 @@ Plans:
 | 1. Foundation | 3/3 | Complete | 2026-04-04 |
 | 2. App Shell & Design System | 1/3 | In Progress|  |
 | 3. Market Data Pipeline | 10/10 | Complete   | 2026-05-04 |
-| 4. Portfolio Builder | 5/6 | In Progress | - |
+| 4. Portfolio Builder | 6/6 | Complete | 2026-05-04 |
 | 5. Backtesting Engine | 0/TBD | Not started | - |
 | 6. Projections | 0/TBD | Not started | - |
 | 7. Portfolio Comparison | 0/TBD | Not started | - |
