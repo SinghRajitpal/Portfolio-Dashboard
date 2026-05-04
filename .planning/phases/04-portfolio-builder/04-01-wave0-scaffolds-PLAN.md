@@ -19,6 +19,7 @@ files_modified:
   - src/components/ui/separator.tsx
   - supabase/migrations/00004_portfolio_templates.sql
   - supabase/migrations/00005_seed_etf_metadata.sql
+  - supabase/migrations/00007_instruments_resolve_policy.sql
   - tests/integration/portfolio-create.spec.ts
   - tests/integration/portfolio-edit.spec.ts
   - tests/integration/portfolio-delete.spec.ts
@@ -36,7 +37,7 @@ autonomous: true
 requirements: [PORT-01, PORT-02, PORT-03, PORT-04, PORT-05, PORT-06, PORT-07, PORT-08, META-01]
 user_setup:
   - service: supabase
-    why: "Apply new migrations to dev DB (00004 templates, 00005 ETF metadata backfill)"
+    why: "Apply new migrations to dev DB (00004 templates, 00005 ETF metadata backfill, 00007 instruments INSERT RLS policy for /api/instruments/resolve)"
     dashboard_config:
       - task: "Run `npx supabase db push` (or `supabase db reset` for local) after Wave 0 lands"
         location: "Local terminal — uses .env.local Supabase pooler URL"
@@ -47,6 +48,7 @@ must_haves:
     - "All shadcn primitives (popover, command, form, sonner, tooltip, alert-dialog, separator) render without import errors"
     - "Migration 00004 applies cleanly: portfolios.user_id becomes nullable, CHECK constraint enforces NULL only when is_template=true, RLS allows authenticated read of templates"
     - "Migration 00005 applies cleanly: ~14 v1 tickers have non-null expense_ratio and dividend_yield"
+    - "Migration 00007 applies cleanly: instruments table gains an INSERT policy WITH CHECK (data_source = 'resolved') so authenticated users can self-resolve unknown tickers via /api/instruments/resolve in Plan 04"
     - "Every Wave 0 test file exists, contains describe/it stubs that import the (not-yet-existing) target modules, and is marked .skip or it.todo so vitest/playwright runs green"
     - "vitest.config.mts environment can resolve jsdom for *.test.tsx files (or test files use Playwright instead)"
   artifacts:
@@ -56,6 +58,9 @@ must_haves:
     - path: "supabase/migrations/00005_seed_etf_metadata.sql"
       provides: "Backfill of expense_ratio and dividend_yield for v1 seeded tickers (SPY, VT, AGG, TLT, IEI, GLD, DJP, VTI, CSSPX.SW, 500E.SW, CHDVD.SW, SSAC.SW, NOVN.SW, VWRL.LSE)"
       contains: "UPDATE public.instruments"
+    - path: "supabase/migrations/00007_instruments_resolve_policy.sql"
+      provides: "INSERT policy on public.instruments WITH CHECK (data_source = 'resolved') so /api/instruments/resolve (Plan 04) can upsert unknown tickers under user context"
+      contains: "FOR INSERT TO authenticated"
     - path: "tests/helpers/test-portfolio.ts"
       provides: "createTestPortfolio + cleanupTestPortfolio helpers for integration specs (uses service role)"
       exports: ["createTestPortfolio", "cleanupTestPortfolio", "loginTestUser"]
@@ -96,6 +101,10 @@ must_haves:
       to: "public.instruments"
       via: "UPDATE statements per ticker"
       pattern: "UPDATE public.instruments SET expense_ratio"
+    - from: "supabase/migrations/00007_instruments_resolve_policy.sql"
+      to: "public.instruments RLS"
+      via: "CREATE POLICY ... FOR INSERT TO authenticated WITH CHECK (data_source = 'resolved')"
+      pattern: "FOR INSERT TO authenticated"
 ---
 
 <objective>
@@ -206,8 +215,8 @@ From supabase/migrations/00001_initial_schema.sql:
 </task>
 
 <task type="auto">
-  <name>Task 2: Author migrations 00004 (templates schema + seed) and 00005 (ETF metadata backfill)</name>
-  <files>supabase/migrations/00004_portfolio_templates.sql, supabase/migrations/00005_seed_etf_metadata.sql</files>
+  <name>Task 2: Author migrations 00004 (templates schema + seed), 00005 (ETF metadata backfill), and 00007 (instruments INSERT RLS for resolve)</name>
+  <files>supabase/migrations/00004_portfolio_templates.sql, supabase/migrations/00005_seed_etf_metadata.sql, supabase/migrations/00007_instruments_resolve_policy.sql</files>
   <action>
     Create `supabase/migrations/00004_portfolio_templates.sql` implementing the Pattern 5 from RESEARCH.md exactly:
 
@@ -246,7 +255,23 @@ From supabase/migrations/00001_initial_schema.sql:
     UPDATE public.instruments SET expense_ratio = 0.0000, dividend_yield = 0.0386, data_source = 'manual' WHERE ticker = 'NOVN.SW';
     ```
 
-    Apply both migrations:
+    Create `supabase/migrations/00007_instruments_resolve_policy.sql`:
+
+    Per `supabase/migrations/00001_initial_schema.sql`, the instruments table already has a SELECT policy `USING (true)` for authenticated users, but NO INSERT policy. Plan 04 introduces `/api/instruments/resolve` which must upsert unknown tickers (e.g., from Yahoo text search) under the caller's user context. Without an INSERT policy, that upsert will silently fail under RLS. This migration MUST be created and applied unconditionally as part of Wave 0 — Plan 04 depends on it.
+
+    ```sql
+    -- supabase/migrations/00007_instruments_resolve_policy.sql
+    -- Allow authenticated users to insert NEW instruments via /api/instruments/resolve (Plan 04).
+    -- The data_source = 'resolved' constraint scopes user-driven inserts to the resolve flow,
+    -- preventing users from masquerading data sourced from Yahoo / Stooq pipelines.
+    CREATE POLICY "Authenticated users can resolve new instruments"
+      ON public.instruments FOR INSERT TO authenticated
+      WITH CHECK (data_source = 'resolved');
+    ```
+
+    Note: SELECT policy already exists in 00001 (`USING (true)`), so do NOT recreate it. Do NOT add UPDATE/DELETE policies — those remain unavailable to user roles.
+
+    Apply all three migrations:
     ```bash
     npx supabase db push --include-all 2>&1 || npx supabase db push 2>&1
     ```
@@ -259,9 +284,9 @@ From supabase/migrations/00001_initial_schema.sql:
     Use the migration approach (NOT manual SQL execution) per established Phase 1-3 pattern.
   </action>
   <verify>
-    <automated>test -f supabase/migrations/00004_portfolio_templates.sql && test -f supabase/migrations/00005_seed_etf_metadata.sql && grep -q "is_template = true" supabase/migrations/00004_portfolio_templates.sql && grep -q "ALTER COLUMN user_id DROP NOT NULL" supabase/migrations/00004_portfolio_templates.sql && grep -q "Classic 60/40" supabase/migrations/00004_portfolio_templates.sql && grep -q "All-Weather" supabase/migrations/00004_portfolio_templates.sql && grep -cE "UPDATE public.instruments SET expense_ratio" supabase/migrations/00005_seed_etf_metadata.sql | awk '$1>=14{exit 0} {exit 1}'</automated>
+    <automated>test -f supabase/migrations/00004_portfolio_templates.sql && test -f supabase/migrations/00005_seed_etf_metadata.sql && test -f supabase/migrations/00007_instruments_resolve_policy.sql && grep -q "is_template = true" supabase/migrations/00004_portfolio_templates.sql && grep -q "ALTER COLUMN user_id DROP NOT NULL" supabase/migrations/00004_portfolio_templates.sql && grep -q "Classic 60/40" supabase/migrations/00004_portfolio_templates.sql && grep -q "All-Weather" supabase/migrations/00004_portfolio_templates.sql && grep -q "FOR INSERT TO authenticated" supabase/migrations/00007_instruments_resolve_policy.sql && grep -q "data_source = 'resolved'" supabase/migrations/00007_instruments_resolve_policy.sql && grep -cE "UPDATE public.instruments SET expense_ratio" supabase/migrations/00005_seed_etf_metadata.sql | awk '$1>=14{exit 0} {exit 1}'</automated>
   </verify>
-  <done>Both migration files exist with correct DDL/DML; 3 template rows seedable; 14+ UPDATE statements for ETF metadata; both apply cleanly to dev DB (manual verification of remote DB rows acceptable in execute log).</done>
+  <done>All three migration files exist with correct DDL/DML; 3 template rows seedable; 14+ UPDATE statements for ETF metadata; instruments INSERT policy created with data_source check; all apply cleanly to dev DB (manual verification of remote DB rows acceptable in execute log).</done>
 </task>
 
 <task type="auto">
@@ -290,7 +315,9 @@ From supabase/migrations/00001_initial_schema.sql:
       userId: string
       name: string
       investmentAmount?: number
-      items?: { ticker: string; weight: number }[]
+      // Aligned with Plan 03's final contract: callers seed by instrument_id (UUID), not ticker.
+      // Wave 0 stubs throw, so this only constrains the type signature downstream plans implement against.
+      items?: { instrument_id: string; weight: number }[]
     }
 
     export async function createTestPortfolio(input: SeedPortfolioInput): Promise<{ id: string }> {
@@ -427,7 +454,7 @@ From supabase/migrations/00001_initial_schema.sql:
 
 <verification>
 - All shadcn components install at expected paths
-- Two new migrations (00004, 00005) apply cleanly to the dev Supabase via supavisor pooler
+- Three new migrations (00004, 00005, 00007) apply cleanly to the dev Supabase via supavisor pooler
 - 3 template rows queryable post-migration (`SELECT count(*) FROM portfolios WHERE is_template = true` returns 3)
 - 14+ instruments rows have non-null expense_ratio and dividend_yield post-migration
 - All 12 stub test files green (todo/skip), no fail
@@ -438,7 +465,7 @@ From supabase/migrations/00001_initial_schema.sql:
 1. `npm install` clean exit; `package.json` lists react-hook-form, @hookform/resolvers, zod, papaparse, @types/papaparse
 2. `src/components/ui/{popover,command,form,sonner,tooltip,alert-dialog,separator}.tsx` all exist
 3. `<Toaster />` rendered globally in `src/app/layout.tsx`
-4. `supabase/migrations/00004_portfolio_templates.sql` and `00005_seed_etf_metadata.sql` exist and apply cleanly
+4. `supabase/migrations/00004_portfolio_templates.sql`, `00005_seed_etf_metadata.sql`, and `00007_instruments_resolve_policy.sql` exist and apply cleanly
 5. Post-migration DB has: portfolios.user_id is nullable; 3 template rows present; 14 v1 instruments have non-null TER + yield
 6. All 12 Wave 0 test stub files exist; `npm run test:unit` reports todos (green); `npx playwright test --list` discovers all integration specs without errors
 7. Test helper `tests/helpers/test-portfolio.ts` exposes the documented stub API

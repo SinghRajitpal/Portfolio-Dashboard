@@ -314,16 +314,7 @@ export function PortfolioBuilder(props: {
       }
       ```
     - Renders `<PortfolioBuilder mode={mode} initialData={initialData} instrumentsMeta={instrumentsMeta} onSubmit={handleSubmit} saving={saving} errorMessage={errorMessage} />`
-    - The instrumentsMeta prop will become stale as the user adds new instruments via combobox — accept this for v1 and have the combobox onSelect ALSO trigger a "fetch meta for new id" round-trip. Detail: after combobox returns a new instrument_id, the builder needs metric data to recompute. Solution: client-side, after onSelect, do `fetch('/api/instruments/meta?ids=<id>')` (need new endpoint? — see below) OR inline fetch via supabase client.
-
-      DECISION: extend the existing `/api/instruments/resolve` endpoint to also return expense_ratio + dividend_yield in its response, then PortfolioBuilderClient passes a `onResolveAdded(id, meta)` callback that augments instrumentsMeta state. Update Plan 04's resolve route accordingly: response shape becomes `{ id, meta: { expense_ratio: number | null; dividend_yield: number | null } }`.
-
-      To avoid extending Plan 04 retroactively here, the simplest fix is an additional read-only endpoint. Use the existing /api/instruments/resolve and have it also return the metadata fields (it already SELECTs the row). UPDATE THE RESOLVE ENDPOINT in this plan as a second sub-step of Task 2, modifying it from Plan 04.
-
-    - Update `src/app/api/instruments/resolve/route.ts` (existing from Plan 04) to include `meta` in the response:
-      Response now: `{ id: string, meta: { expense_ratio: number | null, dividend_yield: number | null } }`.
-    - Update `src/components/portfolio/InstrumentCombobox.tsx` (existing from Plan 04) — its onSelect callback signature gains the meta fields. SelectedInstrument type extends to include `expense_ratio` and `dividend_yield`. Bump that contract here (sub-step in Task 2).
-    - Update `src/components/portfolio/PortfolioBuilder.tsx` to take an `onAddInstrument(meta)` prop OR maintain its own instrumentsMeta state that merges incoming + initial. Simpler: PortfolioBuilder owns a local `mergedMeta` state initialized from props.instrumentsMeta and updated on each combobox onSelect.
+    - PortfolioBuilder (per Plan 04) already maintains its own `mergedMeta` state seeded from `instrumentsMeta` and extends it on every combobox `onSelect` (the onSelect payload includes `expense_ratio` + `dividend_yield`, sourced from `/api/instruments/resolve`'''s `{ id, meta }` response shape — also locked in Plan 04). PortfolioBuilderClient does NOT need to patch the meta or thread an `onAddInstrument` callback — the builder owns that lifecycle. This plan ONLY consumes the contracts Plan 04 exposes; no Plan 04 files are mutated here.
 
     DeletePortfolioButton.tsx ('use client'):
     - Props: `{ id: string; name: string }`
@@ -408,18 +399,34 @@ export function PortfolioBuilder(props: {
 
     All tests use the helper to clean up created users/portfolios after each suite.
 
+    **Smoke tagging for fast per-task feedback (closes checker warning #4):** Tag exactly ONE representative test per spec with `@smoke` in its title. Recommended choices:
+    - portfolio-create.spec.ts → tag `'''user can create a portfolio with name + 2 instruments + sum=100''' @smoke`
+    - portfolio-edit.spec.ts → tag `'''user can edit name and weight''' @smoke`
+    - portfolio-delete.spec.ts → tag `'''Confirm delete removes the row''' @smoke`
+    - portfolio-list.spec.ts → tag `'''Non-empty list shows borderless rows with metrics''' @smoke`
+    - instrument-search.spec.ts → tag `'''Combobox searches by ticker''' @smoke`
+    - portfolio-template.spec.ts → tag `'''Selecting a template pre-fills builder with [name] (copy)''' @smoke`
+
+    The `<automated>` verify uses `--grep @smoke` so per-task feedback completes in well under the 30s feedback target. The full suite is run as a pre-checkpoint sanity command in Task 4.
+
     Manual checkpoint follows in Task 4.
   </action>
   <verify>
-    <automated>npx playwright test tests/integration/portfolio-create.spec.ts tests/integration/portfolio-edit.spec.ts tests/integration/portfolio-delete.spec.ts tests/integration/portfolio-list.spec.ts tests/integration/instrument-search.spec.ts tests/integration/portfolio-template.spec.ts --project=chromium 2>&1 | tail -30</automated>
+    <automated>npx playwright test tests/integration/portfolio-create.spec.ts tests/integration/portfolio-edit.spec.ts tests/integration/portfolio-delete.spec.ts tests/integration/portfolio-list.spec.ts tests/integration/instrument-search.spec.ts tests/integration/portfolio-template.spec.ts --grep @smoke --project=chromium 2>&1 | tail -25</automated>
   </verify>
-  <done>All 6 integration spec files have real test() calls (no test.skip except documented edge cases like rate-limit). Playwright runs all 6 specs against a running dev server with green output (allow up to 5 minutes runtime — large suite).</done>
+  <done>All 6 integration spec files have real test() calls (no test.skip except documented edge cases like rate-limit). Each spec has exactly one @smoke-tagged test that exercises the happy path. The @smoke run completes inside the per-task feedback budget; the full suite is exercised in Task 4 before the human checkpoint.</done>
 </task>
 
 <task type="checkpoint:human-verify" gate="blocking">
   <name>Task 4: Manual UX verification of portfolio CRUD + templates</name>
   <files>(no files modified — manual verification gate)</files>
-  <action>Pause for human verification. Run dev server, exercise the flows enumerated in &lt;how-to-verify&gt; below, then resume on user approval. No code changes performed in this task.</action>
+  <action>Before the human verifies the UX, run the FULL Playwright suite (no `--grep @smoke` filter) as a pre-checkpoint sanity command:
+
+  ```bash
+  npx playwright test tests/integration/portfolio-create.spec.ts tests/integration/portfolio-edit.spec.ts tests/integration/portfolio-delete.spec.ts tests/integration/portfolio-list.spec.ts tests/integration/instrument-search.spec.ts tests/integration/portfolio-template.spec.ts --project=chromium
+  ```
+
+  Allow up to 5 minutes for the full suite. If anything fails, fix it before pausing for the human. Then pause for human verification — run dev server, exercise the flows enumerated in &lt;how-to-verify&gt; below, then resume on user approval. No code changes are performed by the human verification itself.</action>
   <verify>Human confirms all enumerated UX bullets pass. Resume signal: "approved".</verify>
   <done>User has signaled "approved" (or has reported blocking issues that have been fixed in a follow-up task).</done>
   <what-built>

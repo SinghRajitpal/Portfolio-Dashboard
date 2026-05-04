@@ -261,7 +261,14 @@ export type CsvPreviewClientProps = {
     AGG,50,US
     ```
 
-    ambiguous-no-exchange.csv (use a ticker that has multiple seeded venues; per Phase 3 seed list, VWRL is on LSE — single venue. Use a synthetic test row for ambiguity by seeding 2 venues for one ticker via the test setup OR pick a ticker with known multi-venue: SPY only on US in seed list, so this is hard to test deterministically against the real seed. Approach: in test setup, seed an extra instruments row to create ambiguity — e.g., insert {ticker:'TESTAMB', exchange:'US'} and {ticker:'TESTAMB', exchange:'XETRA'} then upload a CSV with `TESTAMB,100`).
+    ambiguous-no-exchange.csv:
+    ```
+    ticker,weight
+    TESTAMB,100
+    ```
+
+    Note: the real `instruments` table has `UNIQUE(ticker)` per `supabase/migrations/00001_initial_schema.sql:36`, so seeding two rows with the same ticker on different exchanges to create ambiguity is impossible without a schema change. Instead, the ambiguous-CSV test uses Playwright network interception (`page.route`) to mock the `/api/instruments/csv-resolve` response for the TESTAMB ticker — keeping the test isolated from DB schema and avoiding any production migration churn.
+
 
     malformed.csv:
     ```
@@ -282,13 +289,38 @@ export type CsvPreviewClientProps = {
     2. test('CSV with explicit exchange'):
        - Upload with-exchange.csv. Assert that the resolved rows show the US listings (not picked from another venue).
     3. test('Ambiguous CSV requires user pick'):
-       - Setup: insert 2 instruments rows for ticker 'TESTAMB' on different exchanges via service client.
+       - Setup: use Playwright `page.route('**/api/instruments/csv-resolve', ...)` to intercept the resolve POST. The mock returns a synthetic ambiguous response for the TESTAMB ticker:
+         ```ts
+         await page.route('**/api/instruments/csv-resolve', async route => {
+           const body = JSON.parse(route.request().postData() ?? '{}')
+           if (body.rows?.some((r: any) => r.ticker === 'TESTAMB')) {
+             await route.fulfill({
+               status: 200,
+               contentType: 'application/json',
+               body: JSON.stringify({
+                 resolved: [{
+                   ticker: 'TESTAMB',
+                   weight: 100,
+                   status: 'ambiguous',
+                   alternatives: [
+                     { id: '11111111-1111-1111-1111-111111111111', ticker: 'TESTAMB', name: 'Test Ambiguous (US)', exchange: 'US', currency: 'USD', expense_ratio: 0.001, dividend_yield: 0.02, isin: null, type: 'etf' },
+                     { id: '22222222-2222-2222-2222-222222222222', ticker: 'TESTAMB', name: 'Test Ambiguous (XETRA)', exchange: 'XETRA', currency: 'EUR', expense_ratio: 0.001, dividend_yield: 0.02, isin: null, type: 'etf' },
+                   ],
+                 }],
+               }),
+             })
+             return
+           }
+           await route.continue()
+         })
+         ```
+       - The mocked alternatives use stable fake UUIDs; this lets the test assert the picked alternative without polluting the DB or fighting `UNIQUE(ticker)`.
        - Upload ambiguous-no-exchange.csv. Continue → preview shows banner "1 row needs attention".
-       - The TESTAMB row has a Select with both alternatives.
+       - The TESTAMB row has a Select with both alternatives ("US" and "XETRA").
        - Save button is disabled.
-       - Click an alternative; banner disappears; builder renders the row.
-       - Save succeeds.
-       - Cleanup: delete the synthetic TESTAMB rows after test.
+       - Click the "US" alternative; banner disappears; builder renders the row.
+       - When the user clicks Save, savePortfolio will fail because the synthetic instrument_id does not exist in the DB. EITHER (a) intercept the failing save and assert the user-flow up to "Save attempted with picked alternative" without persisting, OR (b) before clicking Save, swap the picked id for a real instrument_id (e.g., VT'''s id fetched via service client) by re-rendering with that selection. Approach (a) is simpler and matches the test'''s purpose (verifying the ambiguity UI, not end-to-end persistence).
+       - No DB rows are created or deleted by this test.
     4. test('Malformed CSV surfaces row errors'):
        - Upload malformed.csv. Dialog shows parse errors (non-numeric weight, missing ticker). Continue is disabled OR Continue routes to preview with the bad rows in the unresolved list. Assert the error UI is visible.
     5. test('Unresolved ticker gets search-replace affordance'):
@@ -344,6 +376,7 @@ export type CsvPreviewClientProps = {
 </tasks>
 
 <verification>
+- Test strategy: the ambiguous-CSV test uses Playwright `page.route()` interception to mock `/api/instruments/csv-resolve` rather than seeding two synthetic rows in the `instruments` table. This avoids fighting the `UNIQUE(ticker)` constraint in `supabase/migrations/00001_initial_schema.sql:36` and keeps the test free of DB cleanup. All other tests (well-formed, with-exchange, malformed, unresolved) hit the real route against the seeded DB.
 - /api/instruments/csv-resolve returns matched/ambiguous/unresolved classifications correctly
 - CsvImportDialog parses + resolves + routes to preview
 - CsvPreviewClient resolves ambiguous + unresolved rows in-place; builder appears once all resolved
