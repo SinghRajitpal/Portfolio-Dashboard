@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 4 context gathered
-last_updated: "2026-05-04T17:38:28.509Z"
-last_activity: "2026-05-04 — Completed 03-10: Vercel cron triggers verified (US 7/7, SW 4/5, LSE 1/2), 401 regression confirmed, 3 deploy fixes landed"
+status: in-progress
+stopped_at: Completed 04-01-wave0-scaffolds-PLAN.md
+last_updated: "2026-05-04T18:53:37.893Z"
+last_activity: "2026-05-04 — Completed 04-01: Phase 4 deps + shadcn primitives + 3 migrations (templates/metadata/INSERT-RLS) + 13 stub test files"
 progress:
   total_phases: 7
   completed_phases: 3
-  total_plans: 16
-  completed_plans: 16
-  percent: 100
+  total_plans: 22
+  completed_plans: 17
+  percent: 77
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Before you invest real money, you can see — with real historical data, in your own currency — exactly what would have happened and what might happen next.
-**Current focus:** Phase 3 — Market Data Pipeline
+**Current focus:** Phase 4 — Portfolio Builder
 
 ## Current Position
 
-Phase: 3 of 7 COMPLETE (Market Data Pipeline)
-Plan: 10 of 10 in Phase 3 (Plan 10 complete — live re-seed + smoke 5/5 + Vercel cron verified)
-Status: Phase 3 complete — all 10 plans done; DATA-01 and DATA-05 closed
-Last activity: 2026-05-04 — Completed 03-10: Vercel cron triggers verified (US 7/7, SW 4/5, LSE 1/2), 401 regression confirmed, 3 deploy fixes landed
+Phase: 4 of 7 IN PROGRESS (Portfolio Builder)
+Plan: 1 of 6 in Phase 4 (04-01 wave0 scaffolds COMPLETE)
+Status: Wave 0 scaffolding landed — deps installed, shadcn primitives + form wrapper, 3 migrations applied, 13 stub test files green
+Last activity: 2026-05-04 — Completed 04-01: Phase 4 deps + shadcn primitives + 3 migrations (templates/metadata/INSERT-RLS) + 13 stub test files
 
-Progress: [██████████] 100%
+Progress: [████████░░] 77%
 
 ## Performance Metrics
 
@@ -67,6 +67,7 @@ Progress: [██████████] 100%
 | Phase 03-market-data-pipeline P08 | 25min | 3 tasks | 7 files |
 | Phase 03-market-data-pipeline P09 | 7min | 2 tasks | 6 files |
 | Phase 03-market-data-pipeline P10 | 90min | 3 tasks | 2 files |
+| Phase 04-portfolio-builder P01 | 10min | 3 tasks | 25 files |
 
 ## Accumulated Context
 
@@ -138,6 +139,10 @@ Progress: [██████████] 100%
 - [Phase 03-market-data-pipeline P10]: YahooProvider period2 must be period1+86400 when from===to — Yahoo chart API treats period2 as exclusive; single-day requests (daily cron "today" calls) returned no bars without this fix
 - [Phase 03-market-data-pipeline]: Per-ticker cron skips (VWRL.LSE on UK bank holiday, 500E.SW inconsistent Yahoo .SW) are data-availability gaps not code bugs — cron best-effort design confirmed working
 - [Phase 03-market-data-pipeline]: YahooProvider period2 must be period1+86400 when from===to — Yahoo chart API treats period2 as exclusive; single-day cron requests returned no bars without this expansion fix
+- [Phase 04-portfolio-builder]: Hand-rolled form.tsx wrapper for base-nova shadcn style — registry has no Form component for non-Radix projects; uses RHF + cloneElement instead of Radix Slot
+- [Phase 04-portfolio-builder]: Templates use actually-seeded ticker analogues (VTI.US/AGG.US/IWDA.LSE/BND.US/GLD.US/EEM.US); plan-referenced VT/TLT/IEI/DJP not present in v1 seed
+- [Phase 04-portfolio-builder]: Wave 0 stub discipline: vitest it.todo + Playwright test.skip keep runners green while reserving file paths for downstream verify blocks; no RTL/jsdom installed
+- [Phase 04-portfolio-builder]: Migration 00007 for instruments INSERT RLS gated on data_source='resolved' — confines user inserts to /api/instruments/resolve, blocks impersonation of pipeline data sources
 
 ### Pending Todos
 
@@ -156,6 +161,6 @@ Progress: [██████████] 100%
 
 ## Session Continuity
 
-Last session: 2026-05-04T17:38:28.496Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-portfolio-builder/04-CONTEXT.md
+Last session: 2026-05-04T18:53:37.888Z
+Stopped at: Completed 04-01-wave0-scaffolds-PLAN.md
+Resume file: None
