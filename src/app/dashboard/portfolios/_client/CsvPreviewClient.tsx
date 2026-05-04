@@ -80,9 +80,16 @@ export function CsvPreviewClient({ csvKey }: CsvPreviewClientProps) {
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
 
   // Hydrate once on mount; clear the key so re-mounts (or back navigation)
-  // can't reuse stale CSV state.
+  // can't reuse stale CSV state. Guard against React 19 StrictMode's
+  // double-invocation in dev — without this, the second pass reads `null`
+  // (because the first pass already removed the key) and overwrites the
+  // hydrated state with `missing = true`.
+  const hydratedRef = React.useRef(false)
   React.useEffect(() => {
     if (typeof window === 'undefined') return
+    if (hydratedRef.current) return
+    hydratedRef.current = true
+
     const storageKey = `${CSV_IMPORT_STORAGE_PREFIX}${csvKey}`
     let raw: string | null = null
     try {
