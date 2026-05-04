@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { TemplateRow } from '../_queries'
 import { TemplatePickerDialog } from './TemplatePickerDialog'
+import { CsvImportDialog } from './CsvImportDialog'
 
 export type NewPortfolioMenuProps = {
   templates: TemplateRow[]
@@ -34,6 +35,7 @@ export type NewPortfolioMenuProps = {
 export function NewPortfolioMenu({ templates }: NewPortfolioMenuProps) {
   const router = useRouter()
   const [pickerOpen, setPickerOpen] = React.useState(false)
+  const [csvOpen, setCsvOpen] = React.useState(false)
 
   return (
     <>
@@ -56,13 +58,8 @@ export function NewPortfolioMenu({ templates }: NewPortfolioMenuProps) {
           <DropdownMenuItem onClick={() => setPickerOpen(true)}>
             From template
           </DropdownMenuItem>
-          <DropdownMenuItem disabled>
-            <span className="flex flex-col items-start">
-              <span>Import CSV</span>
-              <span className="text-xs text-muted-foreground">
-                (coming soon)
-              </span>
-            </span>
+          <DropdownMenuItem onClick={() => setCsvOpen(true)}>
+            Import CSV
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -71,6 +68,7 @@ export function NewPortfolioMenu({ templates }: NewPortfolioMenuProps) {
         onOpenChange={setPickerOpen}
         templates={templates}
       />
+      <CsvImportDialog open={csvOpen} onOpenChange={setCsvOpen} />
     </>
   )
 }
