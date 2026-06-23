@@ -17,49 +17,61 @@ PortfolioForge is built in seven phases that follow a strict dependency order: d
 ## Phase Details
 
 ### Phase 1: Foundation
+
 **Goal**: Users can securely sign in and out, and the project is deployed to Vercel with all database infrastructure in place
 **Depends on**: Nothing (first phase)
 **Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04
 **Success Criteria** (what must be TRUE):
+
   1. User can sign up with email and password and receive a confirmation
   2. User can sign in and remain signed in across browser refresh and tab close
   3. User can sign out from any page in the application
   4. Supabase RLS policies are active — one user cannot access another user's portfolio rows
   5. The application is deployed and accessible at a Vercel URL
+
 **Plans**: 3 plans
 Plans:
+
 - [x] 01-01-PLAN.md — Scaffold Next.js 16 + Supabase integration + full database schema with RLS
 - [x] 01-02-PLAN.md — Auth UI (landing page, tabbed sign-in/sign-up, middleware, dashboard placeholder)
 - [x] 01-03-PLAN.md — Playwright e2e tests + Vercel deployment + production verification
 
 ### Phase 2: App Shell & Design System
+
 **Goal**: The signed-in application has a complete visual identity and navigable shell — top nav bar, dashboard layout, responsive grid, and component library — into which all feature phases drop their UI
 **Depends on**: Phase 1
 **Requirements**: UI-01, UI-02, UI-03, UI-04, UI-05
 **Success Criteria** (what must be TRUE):
+
   1. Signed-in user sees a persistent top nav bar with navigation links to all major sections (Dashboard, Portfolios, Backtest, Projections, Compare) and an account menu
   2. The application has a consistent visual identity: Swiss minimalist color palette (Swiss red accent #E3000F), typography, and spacing applied uniformly across all pages via a configured theme
   3. The dashboard page has a clearly structured layout with placeholder regions for portfolio summary cards, a primary chart area, and a metrics strip — even before real data is wired
   4. The layout is responsive: nav collapses to a hamburger menu on mobile and the main content area reflows correctly at tablet and phone widths
   5. shadcn/ui component library is configured with the project theme, and base components (Button, Card, Dialog, Table, Input, Select) are imported and render correctly
+
 **Plans**: 3 plans
 Plans:
+
 - [ ] 02-01-PLAN.md — Install next-themes + shadcn components + Swiss design tokens + ThemeProvider wiring
 - [ ] 02-02-PLAN.md — Top nav component + account menu + dashboard layout shell (UI-01, UI-04)
 - [ ] 02-03-PLAN.md — Dashboard skeleton page + coming-soon placeholder pages (UI-03)
 
 ### Phase 3: Market Data Pipeline
+
 **Goal**: The system can fetch, validate, and cache historical prices, dividends, and FX rates from all required sources, ready for the backtest engine to consume
 **Depends on**: Phase 1
 **Requirements**: DATA-01, DATA-02, DATA-03, DATA-04, DATA-05
 **Success Criteria** (what must be TRUE):
+
   1. A request for a ticker's historical price series returns cached data from Supabase on subsequent calls (no repeat EODHD call)
   2. Historical CHF/USD, CHF/EUR, and CHF/GBP FX rates are available for any date back to 1999 from the Frankfurter cache
   3. An ISIN typed into instrument search resolves to the correct ticker via OpenFIGI and returns price data
   4. Instrument metadata (name, type, currency, expense ratio, dividend yield) is stored and retrievable for a given ticker
   5. A Swiss-listed UCITS ETF (e.g., CHDVD.SW) and a US ETF (e.g., SPY) both return complete price and dividend history
+
 **Plans**: 10 plans (6 original + 4 gap closure for DATA-01)
 Plans:
+
 - [x] 03-01-test-infra-and-proxy-fix-PLAN.md — Wave 0 test infra (Vitest + fixtures + helpers) + src/proxy.ts cron-bypass fix
 - [x] 03-02-errors-interface-migration-PLAN.md — DataError union, IMarketDataProvider interface, isin_lookups migration
 - [x] 03-03-frankfurter-fx-PLAN.md — Frankfurter FX client + idempotent seed back to 1999 (DATA-02)
@@ -72,17 +84,21 @@ Plans:
 - [x] 03-10-reseed-and-verify-PLAN.md — Gap closure: live re-seed + smoke test against prod DB + Vercel cron production verification [DATA-01, DATA-05]
 
 ### Phase 4: Portfolio Builder
+
 **Goal**: Users can create, configure, and save named portfolios with validated instrument weights, and view their portfolio's weighted expense ratio and dividend income
 **Depends on**: Phase 2, Phase 3
 **Requirements**: PORT-01, PORT-02, PORT-03, PORT-04, PORT-05, PORT-06, PORT-07, PORT-08, META-01
 **Success Criteria** (what must be TRUE):
+
   1. User can create a named portfolio, add instruments by searching ticker or name, set percentage weights that must sum to 100%, and save it
   2. User can edit an existing portfolio (add/remove instruments, change weights) and delete a portfolio
   3. User can see the weighted total expense ratio (TER) and estimated annual dividend income for their portfolio
   4. User can start from a built-in template (e.g., "Classic 60/40", "All-World") that pre-fills instruments and weights
   5. User can import a portfolio allocation from a CSV file
+
 **Plans**: 6 plans
 Plans:
+
 - [x] 04-01-wave0-scaffolds-PLAN.md — Wave 0: deps, shadcn primitives, migrations 00004 (templates) + 00005 (ETF metadata), test stubs
 - [x] 04-02-pure-libs-and-schema-PLAN.md — Shared Zod schema + pure libs (computeMetrics, normalizeTo100, fmtCHF, parsePortfolioCsv)
 - [x] 04-03-server-actions-rpc-PLAN.md — Migration 00006 (save_portfolio RPC) + Server Actions + queries module + test helper
@@ -91,37 +107,58 @@ Plans:
 - [x] 04-06-csv-import-PLAN.md — CSV import dialog + preview screen + /api/instruments/csv-resolve + manual checkpoint
 
 ### Phase 5: Backtesting Engine
+
 **Goal**: Users can run a historical backtest on any saved portfolio and see a full equity curve, annual return bars, and core performance metrics — all in CHF
 **Depends on**: Phase 4
 **Requirements**: BACK-01, BACK-02, BACK-03, BACK-04, BACK-05, BACK-06, BACK-07, BACK-08
 **Success Criteria** (what must be TRUE):
+
   1. User can select a portfolio and a date range and run a backtest that shows a CHF equity curve from start to end of period
   2. All prices in the backtest are converted to CHF using point-in-time historical FX rates (not a spot rate or average)
   3. User can toggle dividend reinvestment (DRIP) on or off and see a different equity curve result
   4. User can select a rebalancing frequency (annual, semi-annual, quarterly) and the backtest applies it
   5. Backtest displays total return, CAGR, max drawdown, Sharpe ratio, and annualized volatility
   6. User can select a benchmark (e.g., MSCI World) and see its equity curve overlaid on the portfolio curve
+
 **Plans**: 7 plans
 Plans:
+**Wave 1**
+
 - [ ] 05-01-PLAN.md — Wave 0 scaffolds: deps, migrations 00009+00010, schema push, types, test stubs, fixtures, quarterly cron entry
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 05-02-PLAN.md — Pure backtest libs (TDD): date-grid, forward-fill, inputs-hash, metrics, simulate (with golden-master)
 - [ ] 05-03-PLAN.md — SNB data path: snb.ts fetch + stitch, cache-snb upsert/read, seed script, /api/cron/refresh-snb
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 05-04-PLAN.md — Backtest API routes: POST /api/backtest/data + POST/GET /api/backtest/runs + GET /api/backtest/runs/[id] + Zod schemas
 - [ ] 05-05-PLAN.md — Web Worker + chart primitives: backtest.worker.ts, useBacktestWorker hook, EquityCurveChart, AnnualReturnsChart
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 05-06-PLAN.md — Backtest UI: page.tsx, BacktestClient, SetupBar, MetricsStrip, Results, RunSummaryFooter, RunHistoryDrawer
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
 - [ ] 05-07-PLAN.md — Integration tests (6 Playwright specs) + manual UX checkpoint
 
 ### Phase 6: Projections
+
 **Goal**: Users can project any portfolio forward under three scenarios and run a Monte Carlo simulation that shows probability-weighted outcome bands — with optional monthly contributions and inflation adjustment
 **Depends on**: Phase 5
 **Requirements**: PROJ-01, PROJ-02, PROJ-03, PROJ-04
 **Success Criteria** (what must be TRUE):
+
   1. User can view a projection chart showing three future equity curves labeled conservative, expected, and optimistic
   2. User can enter a monthly contribution amount and see it reflected in all three projection curves
   3. User can run a Monte Carlo simulation and see P10/P50/P90 outcome bands as a fan chart (not a single line)
   4. User can toggle inflation adjustment and see all projection values shift to show real purchasing power in CHF
+
 **Plans**: 7 plans
 Plans:
+
 - [ ] 05-01-PLAN.md — Wave 0 scaffolds: deps, migrations 00009+00010, schema push, types, test stubs, fixtures, quarterly cron entry
 - [ ] 05-02-PLAN.md — Pure backtest libs (TDD): date-grid, forward-fill, inputs-hash, metrics, simulate (with golden-master)
 - [ ] 05-03-PLAN.md — SNB data path: snb.ts fetch + stitch, cache-snb upsert/read, seed script, /api/cron/refresh-snb
@@ -131,15 +168,19 @@ Plans:
 - [ ] 05-07-PLAN.md — Integration tests (6 Playwright specs) + manual UX checkpoint
 
 ### Phase 7: Portfolio Comparison
+
 **Goal**: Users can compare two or more saved portfolios side-by-side on a single chart and across key risk-return metrics and a correlation matrix
 **Depends on**: Phase 5
 **Requirements**: COMP-01, COMP-02, COMP-03
 **Success Criteria** (what must be TRUE):
+
   1. User can select two or more portfolios and see their backtest equity curves overlaid on a single chart over the same time period
   2. User can see a comparison table showing Sharpe ratio, max drawdown, and estimated dividend income side-by-side for each portfolio
   3. User can view a correlation matrix showing how each portfolio's returns correlate with each other
+
 **Plans**: 7 plans
 Plans:
+
 - [ ] 05-01-PLAN.md — Wave 0 scaffolds: deps, migrations 00009+00010, schema push, types, test stubs, fixtures, quarterly cron entry
 - [ ] 05-02-PLAN.md — Pure backtest libs (TDD): date-grid, forward-fill, inputs-hash, metrics, simulate (with golden-master)
 - [ ] 05-03-PLAN.md — SNB data path: snb.ts fetch + stitch, cache-snb upsert/read, seed script, /api/cron/refresh-snb

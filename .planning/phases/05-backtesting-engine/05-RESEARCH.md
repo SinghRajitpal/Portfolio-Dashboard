@@ -799,27 +799,31 @@ CREATE POLICY "Authenticated can read snb_rates"
 | A4 | The Vercel free-tier Cron Jobs already declared (Phase 3 cron for prices) leaves room for one more cron at quarterly cadence for SNB refresh | Architecture / Cron | Low — quarterly = 4 invocations/year; Vercel Hobby allows 2 daily slots minimum, plenty of headroom |
 | A5 | Histogram side-by-side rendering of two series at the same time index is NOT natively supported by lightweight-charts | Pattern 3 | Medium — research didn't fully verify; planner should prototype before committing to the "two stacked charts" workaround. If lightweight-charts CAN do side-by-side bars, the simpler workaround wins |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Are the four benchmarks (URTH/SSAC/SPY/CSSMI) already pre-seeded with enough history?**
    - What we know: SPY and SSAC.SW are confirmed seeded per STATE.md; CHDVD.SW seeded; CSSPX (S&P 500 UCITS) seeded.
    - What's unclear: URTH.US / SWDA.L (MSCI World) and CSSMI.SW (SMI ETF) — STATE.md doesn't mention them in the seeded list.
    - Recommendation: Planner adds a Wave 0 task to query `instruments.first_date` for all 4 benchmark candidates and run a seed-on-demand for any missing. D-22 explicitly leaves "MSCI World listing choice" to the planner — pick whichever has the longest cached history.
+   - **RESOLVED:** Plan 01 adds a Wave 0 benchmark-seed-check task (Task 4) that queries `instruments.first_date` for URTH.US, SWDA.L/SWDA.LSE, SSAC.SW, SPY.US, CSSMI.SW and triggers seed-on-demand via the Phase 3 yahoo-provider pipeline for any candidate with `< 10 years` of history or missing entirely. The MSCI World variant with the longest cached history is selected by `loadBenchmarkInstruments()` in Plan 06.
 
 2. **Histogram side-by-side bars in lightweight-charts: is there a native trick?**
    - What we know: `priceScaleId: ''` overlays two histograms on the same x-axis, but they paint at the same x-coord (overlapping bars), not side-by-side per year.
    - What's unclear: Whether a small `time` offset trick (e.g., shift benchmark dates by +180 days within the same year) produces an acceptable visual, or whether stacked charts are required.
    - Recommendation: Planner prototypes both with 5 years of synthetic data in a single throwaway plan task; picks the cleaner outcome.
+   - **RESOLVED:** Use **two stacked sub-charts** (recommendation (a)) — one HistogramSeries per chart (portfolio above, benchmark below) sharing a synchronized x-axis via lightweight-charts' time-scale subscription. Lightweight-charts v5 does not support per-bar x-offsets natively; the `time` shift workaround produces visual artifacts at year boundaries. Two stacked charts is documented in `Plan 05 §AnnualReturnsChart` (RESEARCH Pattern 3 recommendation (a)) and asserted by `backtest-annual-bars.spec.ts` (Plan 07).
 
 3. **Where should SNB stitching happen — on seed/cron, or on read?**
    - What we know: Both work. Storing pre-stitched in `snb_rates(date_month, rate, source)` lets the batch endpoint do one query. Stitching on read keeps raw provenance in two distinct tables.
    - What's unclear: User-facing surface area is identical either way.
    - Recommendation: **Stitch on cron/seed** — fewer code paths, source column preserves provenance, single batch read remains single batch read.
+   - **RESOLVED:** Stitch on cron/seed during the quarterly SNB refresh — implemented in Plan 03 (`src/lib/data/snb.ts::fetchSnbPolicyRate` returns pre-stitched `{date_month, rate, source}` rows; `upsertSnbRates` writes them; the batch endpoint in Plan 04 does a single range SELECT). Lower runtime cost, deterministic, no per-request branching.
 
 4. **Should `backtest_runs.equity_curve_json` be compressed or chunked?**
    - What we know: A 10-year daily curve is ~2500 points; with `{date,value}` per point that's ~50KB raw, ~10KB gzipped. Supabase JSONB compresses transparently.
    - What's unclear: Whether to also strip every Nth point for display (LTTB downsampling) before storage.
    - Recommendation: Store full curve — lightweight-charts handles 2500 points fine; saves the "loss of fidelity on reload" footgun.
+   - **RESOLVED:** Store full uncompressed JSONB in v1. PostgreSQL TOAST handles compression transparently for rows >2KB (Supabase default); a 10-year daily curve compresses to ~10KB on disk. Revisit if individual `equity_curve_json` rows exceed ~100KB (50-year backtests) — at that point consider LTTB downsampling or columnar storage. No chunking in v1.
 
 ## Environment Availability
 
