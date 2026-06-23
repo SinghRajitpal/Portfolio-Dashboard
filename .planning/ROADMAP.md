@@ -101,7 +101,15 @@ Plans:
   4. User can select a rebalancing frequency (annual, semi-annual, quarterly) and the backtest applies it
   5. Backtest displays total return, CAGR, max drawdown, Sharpe ratio, and annualized volatility
   6. User can select a benchmark (e.g., MSCI World) and see its equity curve overlaid on the portfolio curve
-**Plans**: TBD
+**Plans**: 7 plans
+Plans:
+- [ ] 05-01-PLAN.md — Wave 0 scaffolds: deps, migrations 00009+00010, schema push, types, test stubs, fixtures, quarterly cron entry
+- [ ] 05-02-PLAN.md — Pure backtest libs (TDD): date-grid, forward-fill, inputs-hash, metrics, simulate (with golden-master)
+- [ ] 05-03-PLAN.md — SNB data path: snb.ts fetch + stitch, cache-snb upsert/read, seed script, /api/cron/refresh-snb
+- [ ] 05-04-PLAN.md — Backtest API routes: POST /api/backtest/data + POST/GET /api/backtest/runs + GET /api/backtest/runs/[id] + Zod schemas
+- [ ] 05-05-PLAN.md — Web Worker + chart primitives: backtest.worker.ts, useBacktestWorker hook, EquityCurveChart, AnnualReturnsChart
+- [ ] 05-06-PLAN.md — Backtest UI: page.tsx, BacktestClient, SetupBar, MetricsStrip, Results, RunSummaryFooter, RunHistoryDrawer
+- [ ] 05-07-PLAN.md — Integration tests (6 Playwright specs) + manual UX checkpoint
 
 ### Phase 6: Projections
 **Goal**: Users can project any portfolio forward under three scenarios and run a Monte Carlo simulation that shows probability-weighted outcome bands — with optional monthly contributions and inflation adjustment
@@ -112,7 +120,15 @@ Plans:
   2. User can enter a monthly contribution amount and see it reflected in all three projection curves
   3. User can run a Monte Carlo simulation and see P10/P50/P90 outcome bands as a fan chart (not a single line)
   4. User can toggle inflation adjustment and see all projection values shift to show real purchasing power in CHF
-**Plans**: TBD
+**Plans**: 7 plans
+Plans:
+- [ ] 05-01-PLAN.md — Wave 0 scaffolds: deps, migrations 00009+00010, schema push, types, test stubs, fixtures, quarterly cron entry
+- [ ] 05-02-PLAN.md — Pure backtest libs (TDD): date-grid, forward-fill, inputs-hash, metrics, simulate (with golden-master)
+- [ ] 05-03-PLAN.md — SNB data path: snb.ts fetch + stitch, cache-snb upsert/read, seed script, /api/cron/refresh-snb
+- [ ] 05-04-PLAN.md — Backtest API routes: POST /api/backtest/data + POST/GET /api/backtest/runs + GET /api/backtest/runs/[id] + Zod schemas
+- [ ] 05-05-PLAN.md — Web Worker + chart primitives: backtest.worker.ts, useBacktestWorker hook, EquityCurveChart, AnnualReturnsChart
+- [ ] 05-06-PLAN.md — Backtest UI: page.tsx, BacktestClient, SetupBar, MetricsStrip, Results, RunSummaryFooter, RunHistoryDrawer
+- [ ] 05-07-PLAN.md — Integration tests (6 Playwright specs) + manual UX checkpoint
 
 ### Phase 7: Portfolio Comparison
 **Goal**: Users can compare two or more saved portfolios side-by-side on a single chart and across key risk-return metrics and a correlation matrix
@@ -122,7 +138,15 @@ Plans:
   1. User can select two or more portfolios and see their backtest equity curves overlaid on a single chart over the same time period
   2. User can see a comparison table showing Sharpe ratio, max drawdown, and estimated dividend income side-by-side for each portfolio
   3. User can view a correlation matrix showing how each portfolio's returns correlate with each other
-**Plans**: TBD
+**Plans**: 7 plans
+Plans:
+- [ ] 05-01-PLAN.md — Wave 0 scaffolds: deps, migrations 00009+00010, schema push, types, test stubs, fixtures, quarterly cron entry
+- [ ] 05-02-PLAN.md — Pure backtest libs (TDD): date-grid, forward-fill, inputs-hash, metrics, simulate (with golden-master)
+- [ ] 05-03-PLAN.md — SNB data path: snb.ts fetch + stitch, cache-snb upsert/read, seed script, /api/cron/refresh-snb
+- [ ] 05-04-PLAN.md — Backtest API routes: POST /api/backtest/data + POST/GET /api/backtest/runs + GET /api/backtest/runs/[id] + Zod schemas
+- [ ] 05-05-PLAN.md — Web Worker + chart primitives: backtest.worker.ts, useBacktestWorker hook, EquityCurveChart, AnnualReturnsChart
+- [ ] 05-06-PLAN.md — Backtest UI: page.tsx, BacktestClient, SetupBar, MetricsStrip, Results, RunSummaryFooter, RunHistoryDrawer
+- [ ] 05-07-PLAN.md — Integration tests (6 Playwright specs) + manual UX checkpoint
 
 ## Progress
 
@@ -132,6 +156,6 @@ Plans:
 | 2. App Shell & Design System | 1/3 | In Progress|  |
 | 3. Market Data Pipeline | 10/10 | Complete   | 2026-05-04 |
 | 4. Portfolio Builder | 6/6 | Complete | 2026-05-04 |
-| 5. Backtesting Engine | 0/TBD | Not started | - |
+| 5. Backtesting Engine | 0/7 | Not started | - |
 | 6. Projections | 0/TBD | Not started | - |
 | 7. Portfolio Comparison | 0/TBD | Not started | - |
