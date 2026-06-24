@@ -149,9 +149,11 @@ useBacktestWorker(): {
 
 **None** — both implemented tasks followed RESEARCH Patterns 1, 2, and 3 verbatim in shape. One small clarifying edit was applied to a doc comment in `EquityCurveChart.tsx` so the v4-API-banned grep gate (`! grep "addLineSeries|addAreaSeries|addHistogramSeries"`) stays clean even when scanning documentation lines — wording-only, no behavior change.
 
-## Checkpoint Pending — Task 3 (human-verify, blocking)
+## Checkpoint Resolved — Task 3 (deferred to Plan 06)
 
-Per the plan, Task 3 requires manual verification of the worker URL resolution in the production bundle. The orchestrator should:
+**Resolution (2026-06-24):** User accepted Path A — "Defer chunk check to Plan 06." Rationale: the worker source + hook compile cleanly with the relative-URL pattern, but no consumer route exists yet, so `.next/static/` cannot emit the worker chunk until Plan 06 imports `useBacktestWorker`. Plan 06's execution must re-verify the gate as part of its work, per the steps below.
+
+**Action required during Plan 06 execution:**
 
 1. Re-run `npm run build` after Plan 06 (or a temporary scratch route) imports `useBacktestWorker`. This is when the worker chunk first lands in `.next/static/`.
 2. Run `npm run start` and open `/dashboard/backtest` in Chrome with DevTools → Network filtered to "worker".
@@ -167,7 +169,7 @@ All threats in the plan's `<threat_model>` are addressed:
 - **T-5-05-WORKER-SCOPE** (Tampering): mitigated — worker has only static imports from `@/lib/backtest/*`; no dynamic `import()`.
 - **T-5-05-XSS** (XSS via tooltip innerHTML): mitigated — every interpolated value is either an ISO date string from our own data or `fmtCHF()` output; no external user input flows through `innerHTML`. Documented at the call site.
 - **T-5-05-SSR** (info disclosure via SSR): accepted — both chart components are `'use client'` and use `useLayoutEffect`; never SSR-rendered.
-- **T-5-05-BUNDLE** (worker URL prod-vs-dev mismatch): mitigated by Task 3 checkpoint (gated on human verification).
+- **T-5-05-BUNDLE** (worker URL prod-vs-dev mismatch): mitigation deferred to Plan 06 — verification re-runs once `useBacktestWorker` is consumed by the dashboard route. Tracking note added to Plan 06 success criteria.
 
 No threat flags introduced beyond the registered set.
 
