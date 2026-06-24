@@ -97,7 +97,7 @@ $ npm run test:unit          # 228 passed, 2 skipped
 
 ## Task 3 — Manual UX Checkpoint
 
-**Status: pending** — orchestrator will present this gate to the user with concrete things to inspect at `/dashboard/backtest`. Acceptance criteria from CONTEXT D-01 through D-05 plus the run summary footer.
+**Status: approved (2026-06-24)** — user inspected `/dashboard/backtest` against the 7-item checklist (D-01 setup ergonomics, D-02 auto-rerun, D-03 stale badge, D-04 deterministic outputs, D-05 run summary footer, equity-curve crosshair, annual-returns chart) and confirmed the workbench feels responsive and accurate.
 
 ## Deviations from plan
 

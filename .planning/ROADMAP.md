@@ -10,7 +10,7 @@ PortfolioForge is built in seven phases that follow a strict dependency order: d
 - [ ] **Phase 2: App Shell & Design System** - Application layout, navigation, dashboard skeleton, component library, and visual identity
 - [x] **Phase 3: Market Data Pipeline** - EODHD integration, FX rates, ISIN resolution, and cache layer (completed 2026-05-03)
 - [x] **Phase 4: Portfolio Builder** - Portfolio CRUD, instrument search, weight validation, templates, and metadata display (completed 2026-05-04)
-- [ ] **Phase 5: Backtesting Engine** - Core simulation loop, CHF conversion, DRIP, rebalancing, metrics, and charts
+- [x] **Phase 5: Backtesting Engine** - Core simulation loop, CHF conversion, DRIP, rebalancing, metrics, and charts (completed 2026-06-24)
 - [ ] **Phase 6: Projections** - Scenario projections, Monte Carlo simulation, contribution modeling, and inflation adjustment
 - [ ] **Phase 7: Portfolio Comparison** - Side-by-side overlay, risk-return comparison, and correlation matrix
 
@@ -142,7 +142,7 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 05-07-PLAN.md — Integration tests (6 Playwright specs) + manual UX checkpoint
+- [x] 05-07-PLAN.md — Integration tests (6 Playwright specs) + manual UX checkpoint
 
 ### Phase 6: Projections
 
@@ -164,7 +164,7 @@ Plans:
 - [x] 05-03-PLAN.md — SNB data path: snb.ts fetch + stitch, cache-snb upsert/read, seed script, /api/cron/refresh-snb
 - [x] 05-04-PLAN.md — Backtest API routes: POST /api/backtest/data + POST/GET /api/backtest/runs + GET /api/backtest/runs/[id] + Zod schemas
 - [x] 05-05-PLAN.md — Web Worker + chart primitives: backtest.worker.ts, useBacktestWorker hook, EquityCurveChart, AnnualReturnsChart
-- [ ] 05-06-PLAN.md — Backtest UI: page.tsx, BacktestClient, SetupBar, MetricsStrip, Results, RunSummaryFooter, RunHistoryDrawer
+- [x] 05-06-PLAN.md — Backtest UI: page.tsx, BacktestClient, SetupBar, MetricsStrip, Results, RunSummaryFooter, RunHistoryDrawer
 - [ ] 05-07-PLAN.md — Integration tests (6 Playwright specs) + manual UX checkpoint
 
 ### Phase 7: Portfolio Comparison
@@ -197,6 +197,6 @@ Plans:
 | 2. App Shell & Design System | 1/3 | In Progress|  |
 | 3. Market Data Pipeline | 10/10 | Complete   | 2026-05-04 |
 | 4. Portfolio Builder | 6/6 | Complete | 2026-05-04 |
-| 5. Backtesting Engine | 6/7 | In Progress|  |
+| 5. Backtesting Engine | 7/7 | Complete   | 2026-06-24 |
 | 6. Projections | 0/TBD | Not started | - |
 | 7. Portfolio Comparison | 0/TBD | Not started | - |
