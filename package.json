@@ -13,6 +13,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "seed:fx": "node --env-file=.env.local --import tsx src/scripts/seed-fx.ts",
+    "seed:snb": "node --env-file=.env.local --import tsx src/scripts/seed-snb.ts",
     "seed:instruments": "node --env-file=.env.local --import tsx src/scripts/seed-instruments.ts",
     "seed:stooq": "node --env-file=.env.local --import tsx src/scripts/seed-instruments-stooq.ts",
     "audit:benchmarks": "node --env-file=.env.local --import tsx src/scripts/audit-benchmark-history.ts"

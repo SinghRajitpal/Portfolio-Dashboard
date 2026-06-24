@@ -117,8 +117,18 @@ export async function fetchSnbPolicyRate(): Promise<SnbPoint[] | DataError> {
   }))
 
   // ── 4. libor_mid points — midpoint of UG0 + OG0 for months strictly before CUTOVER
-  const lowerTs = rangeSeries.find(ts => ts.header.some(h => h.dimItem === 'UG0'))
-  const upperTs = rangeSeries.find(ts => ts.header.some(h => h.dimItem === 'OG0'))
+  //
+  // The live snboffzisa cube does NOT echo the raw 'UG0' / 'OG0' codes in the
+  // response header — it returns human-readable labels ending in 'Lower limit'
+  // and 'Upper limit'. We match either form so the test fixture (which uses
+  // 'UG0' / 'OG0' literals) and the live API both work. Per RESEARCH §Pattern 4
+  // line 519 the upstream uses `.includes('Lower')` / `.includes('Upper')`.
+  const isLower = (h: { dimItem: string }) =>
+    h.dimItem === 'UG0' || h.dimItem.includes('Lower')
+  const isUpper = (h: { dimItem: string }) =>
+    h.dimItem === 'OG0' || h.dimItem.includes('Upper')
+  const lowerTs = rangeSeries.find(ts => ts.header.some(isLower))
+  const upperTs = rangeSeries.find(ts => ts.header.some(isUpper))
   const lowerMap = new Map<string, number>((lowerTs?.values ?? []).map(v => [v.date, v.value]))
   const upperMap = new Map<string, number>((upperTs?.values ?? []).map(v => [v.date, v.value]))
 
