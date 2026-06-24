@@ -61,9 +61,15 @@ export async function POST(request: NextRequest) {
   }
 
   // 4. Dedup pre-check — capture whether an identical-input row already exists
-  //    so we can surface { deduped: true } to the caller. The subsequent upsert
-  //    still runs (with the same inputs_hash + portfolio_id) — Postgres treats
-  //    it as a no-op and returns the existing id via .select().single().
+  //    so we can surface { deduped: true } to the caller. When a row exists we
+  //    return its id immediately and skip the upsert entirely — migration
+  //    00009_backtest_runs.sql intentionally omits an UPDATE policy
+  //    (backtest_runs are immutable), and the prior strategy of issuing an
+  //    UPSERT with ignoreDuplicates:false would have Postgres execute its
+  //    ON CONFLICT DO UPDATE branch which RLS rejects with "new row violates
+  //    row-level security policy (USING expression)". Returning the existing
+  //    id here preserves the deterministic-dedup contract (D-08) without
+  //    needing an UPDATE policy. — Plan 05-07 Rule 1 fix.
   const { data: previousRow, error: dedupErr } = await supabase
     .from('backtest_runs')
     .select('id')
@@ -76,7 +82,12 @@ export async function POST(request: NextRequest) {
       { status: 503 },
     )
   }
-  const deduped = previousRow !== null
+  if (previousRow !== null) {
+    return NextResponse.json({
+      id: (previousRow as { id: string }).id,
+      deduped: true,
+    })
+  }
 
   // 5. Upsert. RLS WITH CHECK enforces user_id = auth.uid() — we must include
   //    user_id in the row even though RLS would otherwise reject the INSERT.
@@ -120,10 +131,36 @@ export async function POST(request: NextRequest) {
       }
     }
   )
-    .upsert(row, { onConflict: 'portfolio_id,inputs_hash', ignoreDuplicates: false })
+    // ignoreDuplicates:true mirrors the no-UPDATE-policy invariant — if a
+    // concurrent request beats us to the INSERT (race after the dedup
+    // pre-check above), Postgres treats it as a no-op rather than firing
+    // the unsupported UPDATE branch. The subsequent .select() returns the
+    // existing row's id via the (portfolio_id, inputs_hash) UNIQUE lookup
+    // pattern we already used at step 4 (we return deduped:false here
+    // because the pre-check was clean — only racing requests can land
+    // here, and they're rare in practice).
+    .upsert(row, { onConflict: 'portfolio_id,inputs_hash', ignoreDuplicates: true })
     .select('id')
     .single()
   if (upsertErr) {
+    // PGRST116 ('Cannot coerce the result to a single JSON object' / 0 rows)
+    // can fire when ignoreDuplicates:true elides the conflict row. Recover
+    // by reading the row that won the race.
+    const errCode = (upsertErr as { code?: string }).code
+    if (errCode === 'PGRST116') {
+      const { data: existing } = await supabase
+        .from('backtest_runs')
+        .select('id')
+        .eq('portfolio_id', portfolio_id)
+        .eq('inputs_hash', inputsHash)
+        .maybeSingle()
+      if (existing) {
+        return NextResponse.json({
+          id: (existing as { id: string }).id,
+          deduped: true,
+        })
+      }
+    }
     return NextResponse.json(
       { kind: 'transient', message: upsertErr.message, attempt: 0 } satisfies DataError,
       { status: 503 },
@@ -131,7 +168,7 @@ export async function POST(request: NextRequest) {
   }
   const upsertedRow = upserted as unknown as { id: string }
 
-  return NextResponse.json({ id: upsertedRow.id, deduped })
+  return NextResponse.json({ id: upsertedRow.id, deduped: false })
 }
 
 export async function GET(request: NextRequest) {

@@ -55,6 +55,7 @@ export function MetricsStrip({ metrics, className }: MetricsStripProps) {
   return (
     <TooltipProvider>
       <div
+        data-testid="metrics-strip"
         className={cn(
           'grid grid-cols-5 gap-8 border-y border-border/60 bg-background/95 px-1 py-3 backdrop-blur',
           className,
@@ -104,7 +105,7 @@ type StatProps = {
 
 function Stat({ label, value, tooltip }: StatProps) {
   return (
-    <div className="flex min-w-0 flex-col gap-0.5">
+    <div data-testid="metrics-strip-stat" className="flex min-w-0 flex-col gap-0.5">
       <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
         {label}
       </span>
