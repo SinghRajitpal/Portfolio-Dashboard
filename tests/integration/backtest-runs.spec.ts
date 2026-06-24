@@ -72,12 +72,13 @@ test.describe('D-08: identical-input run dedupes on inputs_hash', () => {
     // The BacktestClient handler force-clears lastHeavyParamsRef so the
     // heavy effect refires; same inputs → same inputs_hash → server dedupes.
     //
-    // Allow a short settle window before the click so the SSR Supabase
-    // session cookies are fully flushed by the dev-server response cycle;
-    // back-to-back POSTs were observed to occasionally hit an RLS transient
-    // (503 "new row violates row-level security policy") in the dev
-    // environment.
-    await page.waitForTimeout(500)
+    // Allow a settle window before the click so the SSR Supabase session
+    // cookies are fully flushed by the dev-server response cycle AND any
+    // background DB activity (e.g., concurrent cron-style upserts in the
+    // shared dev project) finishes before the second POST recomputes data.
+    // 500ms was insufficient and produced flaky hash mismatches in the dev
+    // environment; 2s gives the data fetch a stable snapshot.
+    await page.waitForTimeout(2000)
     const secondPromise = page.waitForResponse(
       (r) =>
         r.url().includes('/api/backtest/runs') && r.request().method() === 'POST',

@@ -33,7 +33,7 @@ const MS_PER_DAY = 86400000
  * Defensive behavior on degenerate inputs:
  *   - equity.length < 2 → all returns/vol/sharpe = 0; drawdown = 0 with both
  *     dates = first equity date (or empty string if equity is empty).
- *   - start value ≤ 0 → totalReturn = NaN, cagr = NaN (callers must validate).
+ *   - start value ≤ 0 → totalReturn = 0, cagr = 0 (degenerate; serialization-safe).
  *   - stdev = 0 (flat curve or excess === 0) → sharpe = 0 (D-19 NaN-guard).
  */
 export function computeMetrics(args: {
@@ -59,14 +59,14 @@ export function computeMetrics(args: {
 
   const startValue = equity[0].value
   const endValue = equity[equity.length - 1].value
-  const totalReturn = startValue > 0 ? (endValue - startValue) / startValue : NaN
+  const totalReturn = startValue > 0 ? (endValue - startValue) / startValue : 0
 
   // Exact calendar-day basis per D-18.
   const days = (new Date(endDate).getTime() - new Date(startDate).getTime()) / MS_PER_DAY
   const cagr =
     startValue > 0 && days > 0
       ? Math.pow(endValue / startValue, CALENDAR_DAYS_PER_YEAR / days) - 1
-      : NaN
+      : 0
 
   // ── Max Drawdown (D-21) ────────────────────────────────────────────────────
   let runningMax = equity[0].value

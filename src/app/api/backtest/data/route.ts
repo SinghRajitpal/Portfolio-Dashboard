@@ -278,16 +278,49 @@ export async function POST(request: NextRequest) {
   //    RESEARCH Pitfall 9 documents that the race between MAX-read and
   //    subsequent writes is acceptable — the stale-on-view UX badge
   //    (Plan 05-06) recomputes whenever the user opens an older run.
+  //    NOTE: cannot iterate the main result arrays — PostgREST's 1000-row
+  //    default cap can hide the newest row. Use a dedicated ORDER BY
+  //    created_at DESC LIMIT 1 per table for the max stamp.
+  const [pricesMaxRes, divsMaxRes, fxMaxRes] = await Promise.all([
+    instrumentIds.length === 0
+      ? Promise.resolve({ data: [] as Array<{ created_at: string }>, error: null })
+      : supabase
+          .from('prices')
+          .select('created_at')
+          .in('instrument_id', instrumentIds)
+          .gte('date', start)
+          .lte('date', end)
+          .order('created_at', { ascending: false })
+          .limit(1),
+    instrumentIds.length === 0
+      ? Promise.resolve({ data: [] as Array<{ created_at: string }>, error: null })
+      : supabase
+          .from('dividends')
+          .select('created_at')
+          .in('instrument_id', instrumentIds)
+          .gte('ex_date', start)
+          .lte('ex_date', end)
+          .order('created_at', { ascending: false })
+          .limit(1),
+    supabase
+      .from('fx_rates')
+      .select('created_at')
+      .eq('base_currency', 'CHF')
+      .gte('date', start)
+      .lte('date', end)
+      .order('created_at', { ascending: false })
+      .limit(1),
+  ])
   let maxStamp = 0
-  for (const r of priceRowsDb) {
+  for (const r of (pricesMaxRes.data ?? []) as Array<{ created_at: string }>) {
     const t = Date.parse(r.created_at)
     if (Number.isFinite(t) && t > maxStamp) maxStamp = t
   }
-  for (const r of divRowsDb) {
+  for (const r of (divsMaxRes.data ?? []) as Array<{ created_at: string }>) {
     const t = Date.parse(r.created_at)
     if (Number.isFinite(t) && t > maxStamp) maxStamp = t
   }
-  for (const r of fxRowsDb) {
+  for (const r of (fxMaxRes.data ?? []) as Array<{ created_at: string }>) {
     const t = Date.parse(r.created_at)
     if (Number.isFinite(t) && t > maxStamp) maxStamp = t
   }

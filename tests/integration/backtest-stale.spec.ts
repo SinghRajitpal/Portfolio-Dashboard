@@ -107,13 +107,29 @@ test.describe('D-09: stale prices_version surfaces badge', () => {
       .maybeSingle()
     expect(oneRow).not.toBeNull()
     const priceId = (oneRow as { id: string }).id
-    const newCreatedAt = new Date().toISOString()
+    // Bump clearly past stored MAX. When prices+fx have been freshly seeded
+    // (e.g., audit-benchmarks just ran), the save-time pricesVersion is ≈ now
+    // and `new Date()` here can land in the same millisecond → stale=false.
+    // 60 s forward guarantees the load route sees a strictly newer max.
+    const newCreatedAt = new Date(Date.now() + 60_000).toISOString()
     const { error: updErr } = await sb
       .from('prices')
       .update({ created_at: newCreatedAt } as unknown as never)
       .eq('id', priceId)
     expect(updErr).toBeNull()
     bumpedPriceIds.push(priceId)
+
+    // Read-back to confirm the write committed before the load fires.
+    // Supabase write+read against the same pool can otherwise race when the
+    // load route's Promise.all queries are dispatched immediately after.
+    const { data: confirm } = await sb
+      .from('prices')
+      .select('created_at')
+      .eq('id', priceId)
+      .maybeSingle()
+    expect(
+      Date.parse((confirm as { created_at: string } | null)?.created_at ?? '0'),
+    ).toBeGreaterThan(Date.now())
 
     // 3. Open the run history drawer and click the captured run id. The
     //    /api/backtest/runs/[id] route recomputes currentPricesVersion at

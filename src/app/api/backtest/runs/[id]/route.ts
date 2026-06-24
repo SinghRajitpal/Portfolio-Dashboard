@@ -121,7 +121,11 @@ export async function GET(
   const idsArr = [...instrumentIds]
 
   // 4. Recompute current pricesVersion = MAX(created_at) over prices +
-  //    dividends + fx_rates in the run's window. Single Promise.all.
+  //    dividends + fx_rates in the run's window. We sort each table by
+  //    created_at DESC + limit(1) so PostgREST's 1000-row default cap can
+  //    never truncate the max value out of the result (long backtests can
+  //    have >1000 rows per source, and the cap orders by primary key by
+  //    default — the mutated/latest row may not land in the first 1000).
   type PriceMeta = { created_at: string }
   type DivMeta = { created_at: string }
   type FxMeta = { created_at: string }
@@ -134,7 +138,9 @@ export async function GET(
           .select('created_at')
           .in('instrument_id', idsArr)
           .gte('date', start)
-          .lte('date', end),
+          .lte('date', end)
+          .order('created_at', { ascending: false })
+          .limit(1),
     idsArr.length === 0
       ? Promise.resolve({ data: [] as DivMeta[], error: null })
       : supabase
@@ -142,13 +148,17 @@ export async function GET(
           .select('created_at')
           .in('instrument_id', idsArr)
           .gte('ex_date', start)
-          .lte('ex_date', end),
+          .lte('ex_date', end)
+          .order('created_at', { ascending: false })
+          .limit(1),
     supabase
       .from('fx_rates')
       .select('created_at')
       .eq('base_currency', 'CHF')
       .gte('date', start)
-      .lte('date', end),
+      .lte('date', end)
+      .order('created_at', { ascending: false })
+      .limit(1),
   ])
 
   if (pricesRes.error || divsRes.error || fxRes.error) {
