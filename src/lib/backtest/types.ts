@@ -119,7 +119,11 @@ export type BacktestMetrics = {
   vol: number
 }
 
-/** Soft warnings that don't fail the run but should surface in the footer. */
+/** Soft warnings that don't fail the run but should surface in the footer.
+ *
+ * `rebalance` is an audit event — every time the engine fires a rebalance
+ * (first trading day on/after a calendar boundary per D-16) it emits one
+ * warning. The UI shows the count in the footer; tests assert ordering. */
 export type BacktestWarning = {
   kind:
     | 'forward_fill'
@@ -127,6 +131,7 @@ export type BacktestWarning = {
     | 'drip_on_filled'
     | 'snb_stitch'
     | 'fx_lookback'
+    | 'rebalance'
   message: string
   instrument_id?: string
   count?: number

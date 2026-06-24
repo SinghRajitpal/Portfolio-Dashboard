@@ -16,7 +16,6 @@ import { isBacktestError } from './errors'
 import type {
   BacktestInput,
   PriceRow,
-  DividendRow,
   FxRateRow,
   InstrumentInput,
 } from './types'
@@ -60,7 +59,6 @@ const QUARTERLY_GRID = [
 
 describe('simulate — FX point-in-time (BACK-02)', () => {
   it('CHF curve diverges materially from naïve spot-rate calculation', () => {
-    const grid = ['2022-01-04', '2022-01-05']
     const input: BacktestInput = {
       portfolio_id: 'p',
       start: '2022-01-04',
