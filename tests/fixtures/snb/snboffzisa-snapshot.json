@@ -1,0 +1,40 @@
+{
+  "_note": "Offline snapshot of the SNB data portal `snboffzisa` cube response (CHF policy / overnight rates). Mirrors RESEARCH §Pattern 4. Three rows per series cover pre- and post-2019-06 regime stitch dates so the snb.ts fetcher can be tested without hitting data.snb.ch.",
+  "_source_url": "https://data.snb.ch/api/cube/snboffzisa/data/json/en",
+  "_captured_at": "2026-06-23",
+  "timeseries": [
+    {
+      "header": [{ "dimItem": "LZ" }],
+      "values": [
+        { "date": "2019-06", "value": -0.75 },
+        { "date": "2023-06", "value": 1.75 },
+        { "date": "2026-05", "value": 0.25 }
+      ]
+    },
+    {
+      "header": [{ "dimItem": "UG0" }],
+      "values": [
+        { "date": "2019-06", "value": -1.25 },
+        { "date": "2023-06", "value": 1.25 },
+        { "date": "2026-05", "value": -0.25 }
+      ]
+    },
+    {
+      "header": [{ "dimItem": "OG0" }],
+      "values": [
+        { "date": "2019-06", "value": -0.25 },
+        { "date": "2023-06", "value": 2.25 },
+        { "date": "2026-05", "value": 0.75 }
+      ]
+    },
+    {
+      "header": [{ "dimItem": "libor_mid" }],
+      "_note_legacy": "3-month CHF Libor midpoint — used pre-2019-06 stitch",
+      "values": [
+        { "date": "2010-01", "value": 0.25 },
+        { "date": "2015-01", "value": -0.75 },
+        { "date": "2019-05", "value": -0.73 }
+      ]
+    }
+  ]
+}
