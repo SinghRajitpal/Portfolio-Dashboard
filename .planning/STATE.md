@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 5 context gathered
-last_updated: "2026-06-23T22:19:20.661Z"
-last_activity: 2026-06-23 -- Phase 5 planning complete
+last_updated: "2026-06-24T13:34:32.115Z"
+last_activity: 2026-06-23 -- Phase 05 execution started
 progress:
   total_phases: 7
   completed_phases: 4
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Before you invest real money, you can see — with real historical data, in your own currency — exactly what would have happened and what might happen next.
-**Current focus:** Phase 4 — Portfolio Builder
+**Current focus:** Phase 05 — backtesting-engine
 
 ## Current Position
 
-Phase: 4 of 7 COMPLETE (Portfolio Builder)
-Plan: 6 of 6 in Phase 4 (04-06 csv-import COMPLETE)
-Status: Ready to execute
-Last activity: 2026-06-23 -- Phase 5 planning complete
+Phase: 05 (backtesting-engine) — EXECUTING
+Plan: 1 of 7
+Status: Executing Phase 05
+Last activity: 2026-06-23 -- Phase 05 execution started
 
 Progress: [█████████▌] 95%
 

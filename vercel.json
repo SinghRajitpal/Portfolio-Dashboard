@@ -2,6 +2,7 @@
   "framework": "nextjs",
   "crons": [
     { "path": "/api/cron/refresh-prices?exchange=US", "schedule": "0 22 * * *" },
-    { "path": "/api/cron/refresh-prices?exchange=SW", "schedule": "0 22 * * *" }
+    { "path": "/api/cron/refresh-prices?exchange=SW", "schedule": "0 22 * * *" },
+    { "path": "/api/cron/refresh-snb", "schedule": "0 22 1 */3 *" }
   ]
 }
