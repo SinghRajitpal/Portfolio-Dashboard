@@ -109,6 +109,7 @@ export function BacktestSetupBar({
 
   return (
     <div
+      data-testid="backtest-setup-bar"
       className={cn(
         'sticky top-16 z-10 border-y border-border/60 bg-background/95 px-4 py-3 backdrop-blur',
         className,
@@ -124,7 +125,11 @@ export function BacktestSetupBar({
             value={value.portfolio_id}
             onValueChange={(v) => handlePortfolio(String(v))}
           >
-            <SelectTrigger aria-label="Portfolio" className="min-w-[180px]">
+            <SelectTrigger
+              data-testid="backtest-portfolio-select"
+              aria-label="Portfolio"
+              className="min-w-[180px]"
+            >
               <SelectValue placeholder="Select a portfolio" />
             </SelectTrigger>
             <SelectContent>
@@ -221,7 +226,11 @@ export function BacktestSetupBar({
             value={value.benchmark_ticker ?? ''}
             onValueChange={(v) => handleBenchmark(String(v))}
           >
-            <SelectTrigger aria-label="Benchmark" className="min-w-[160px]">
+            <SelectTrigger
+              data-testid="backtest-benchmark-select"
+              aria-label="Benchmark"
+              className="min-w-[160px]"
+            >
               <SelectValue placeholder="None" />
             </SelectTrigger>
             <SelectContent>

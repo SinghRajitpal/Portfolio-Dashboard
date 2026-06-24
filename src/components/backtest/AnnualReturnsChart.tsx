@@ -157,13 +157,17 @@ export function AnnualReturnsChart({
   }, [bars, showBenchmark, height])
 
   return (
-    <div className={cn('w-full space-y-3', className)}>
+    <div
+      data-testid="annual-returns-chart"
+      className={cn('w-full space-y-3', className)}
+    >
       <div className="space-y-1">
         <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           Portfolio
         </div>
         <div
           ref={portfolioContainerRef}
+          data-testid="annual-returns-chart-portfolio"
           className="w-full"
           style={{ height }}
         />
@@ -175,6 +179,7 @@ export function AnnualReturnsChart({
           </div>
           <div
             ref={benchmarkContainerRef}
+            data-testid="annual-returns-chart-benchmark"
             className="w-full"
             style={{ height }}
           />

@@ -53,7 +53,7 @@ export function RunSummaryFooter({
   className,
 }: RunSummaryFooterProps) {
   return (
-    <div className={cn('space-y-3', className)}>
+    <div data-testid="run-summary-footer" className={cn('space-y-3', className)}>
       <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
         Run summary
       </h2>

@@ -52,13 +52,19 @@ export function BacktestResults({
     <div className={cn('space-y-8', className)}>
       {isStale ? (
         <div
+          data-testid="stale-badge"
           role="status"
           className="flex items-center justify-between gap-4 rounded-lg border border-amber-500/40 bg-amber-50 px-3 py-2 text-sm dark:bg-amber-950/30"
         >
           <span className="text-amber-900 dark:text-amber-200">
             Data refreshed — recompute?
           </span>
-          <Button size="sm" variant="outline" onClick={onRecompute}>
+          <Button
+            data-testid="stale-recompute-button"
+            size="sm"
+            variant="outline"
+            onClick={onRecompute}
+          >
             Recompute
           </Button>
         </div>

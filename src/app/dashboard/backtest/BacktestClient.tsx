@@ -189,6 +189,14 @@ export function BacktestClient({ portfolios, benchmarks }: BacktestClientProps) 
   const [historyOpen, setHistoryOpen] = React.useState(false)
   // History list refresh nonce — bumped after a successful run write.
   const [historyVersion, setHistoryVersion] = React.useState(0)
+  // Force-rerun nonce — bumped by handleRun/handleRecompute. Listed in the
+  // heavy effect's deps so an explicit Run click retriggers the effect even
+  // when the BacktestParams values are unchanged (Plan 05-07 Rule 1 fix —
+  // the prior `setParams(p => ({ ...p }))` strategy did not retrigger the
+  // effect because React diffs the dep array by individual values, and
+  // string/boolean dep values are referentially equal after a shallow
+  // clone).
+  const [runNonce, setRunNonce] = React.useState(0)
 
   // Tracks the params for which batchData was fetched. Used to decide whether
   // the next change can ride the cached payload (cheap) or needs a refetch.
@@ -372,6 +380,7 @@ export function BacktestClient({ portfolios, benchmarks }: BacktestClientProps) 
     params.start,
     params.end,
     params.benchmark_ticker,
+    runNonce,
   ])
 
   // Cheap-param effect: worker rerun on cached batchData (no network).
@@ -409,10 +418,17 @@ export function BacktestClient({ portfolios, benchmarks }: BacktestClientProps) 
 
   const handleRun = React.useCallback(() => {
     // Force-heavy: clear the heavy-params ref so the next effect tick refetches
-    // even if params didn't change. This is the explicit "I want fresh data"
-    // user gesture.
+    // even if params didn't change, also clear suppression (a prior
+    // loadHistoricalRun may have set it and the suppression may not yet
+    // have been consumed because identical-params history loads do NOT
+    // re-fire the heavy effect on their own), and bump the runNonce dep
+    // so the heavy effect actually re-fires (React diffs effect deps
+    // individually — a shallow params clone won't trigger because every
+    // field is string/bool and referentially equal post-clone). Plan 05-07
+    // Rule 1 fix.
     lastHeavyParamsRef.current = null
-    setParams((p) => ({ ...p })) // create a new reference to retrigger effects
+    suppressNextRunRef.current = false
+    setRunNonce((n) => n + 1)
   }, [])
 
   const handleRecompute = React.useCallback(() => {
@@ -491,6 +507,7 @@ export function BacktestClient({ portfolios, benchmarks }: BacktestClientProps) 
           className="flex-1"
         />
         <Button
+          data-testid="open-history-button"
           variant="outline"
           onClick={() => setHistoryOpen(true)}
           aria-label="Open run history"

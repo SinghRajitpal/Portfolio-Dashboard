@@ -155,6 +155,7 @@ export function RunHistoryDrawer({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        data-testid="run-history-drawer"
         showCloseButton
         className={cn(
           // Override the default centered-modal positioning with a right-anchored
@@ -190,6 +191,8 @@ export function RunHistoryDrawer({
                   >
                     <button
                       type="button"
+                      data-testid="run-history-row"
+                      data-run-id={r.id}
                       onClick={() => {
                         onSelectRun(r.id)
                         onOpenChange(false)

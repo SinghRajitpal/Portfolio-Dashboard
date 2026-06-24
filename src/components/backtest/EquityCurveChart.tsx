@@ -183,6 +183,7 @@ export function EquityCurveChart({
   return (
     <div
       ref={containerRef}
+      data-testid="equity-curve-chart"
       className={cn('w-full', className)}
       style={{ height }}
     />
