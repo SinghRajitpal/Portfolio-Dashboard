@@ -124,7 +124,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 05-01-PLAN.md — Wave 0 scaffolds: deps, migrations 00009+00010, schema push, types, test stubs, fixtures, quarterly cron entry
+- [x] 05-01-PLAN.md — Wave 0 scaffolds: deps, migrations 00009+00010, schema push, types, test stubs, fixtures, quarterly cron entry
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -197,6 +197,6 @@ Plans:
 | 2. App Shell & Design System | 1/3 | In Progress|  |
 | 3. Market Data Pipeline | 10/10 | Complete   | 2026-05-04 |
 | 4. Portfolio Builder | 6/6 | Complete | 2026-05-04 |
-| 5. Backtesting Engine | 0/7 | Not started | - |
+| 5. Backtesting Engine | 1/7 | In Progress|  |
 | 6. Projections | 0/TBD | Not started | - |
 | 7. Portfolio Comparison | 0/TBD | Not started | - |
