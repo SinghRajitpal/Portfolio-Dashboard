@@ -128,8 +128,8 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 05-02-PLAN.md — Pure backtest libs (TDD): date-grid, forward-fill, inputs-hash, metrics, simulate (with golden-master)
-- [ ] 05-03-PLAN.md — SNB data path: snb.ts fetch + stitch, cache-snb upsert/read, seed script, /api/cron/refresh-snb
+- [x] 05-02-PLAN.md — Pure backtest libs (TDD): date-grid, forward-fill, inputs-hash, metrics, simulate (with golden-master)
+- [x] 05-03-PLAN.md — SNB data path: snb.ts fetch + stitch, cache-snb upsert/read, seed script, /api/cron/refresh-snb
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -159,9 +159,9 @@ Plans:
 **Plans**: 7 plans
 Plans:
 
-- [ ] 05-01-PLAN.md — Wave 0 scaffolds: deps, migrations 00009+00010, schema push, types, test stubs, fixtures, quarterly cron entry
-- [ ] 05-02-PLAN.md — Pure backtest libs (TDD): date-grid, forward-fill, inputs-hash, metrics, simulate (with golden-master)
-- [ ] 05-03-PLAN.md — SNB data path: snb.ts fetch + stitch, cache-snb upsert/read, seed script, /api/cron/refresh-snb
+- [x] 05-01-PLAN.md — Wave 0 scaffolds: deps, migrations 00009+00010, schema push, types, test stubs, fixtures, quarterly cron entry
+- [x] 05-02-PLAN.md — Pure backtest libs (TDD): date-grid, forward-fill, inputs-hash, metrics, simulate (with golden-master)
+- [x] 05-03-PLAN.md — SNB data path: snb.ts fetch + stitch, cache-snb upsert/read, seed script, /api/cron/refresh-snb
 - [ ] 05-04-PLAN.md — Backtest API routes: POST /api/backtest/data + POST/GET /api/backtest/runs + GET /api/backtest/runs/[id] + Zod schemas
 - [ ] 05-05-PLAN.md — Web Worker + chart primitives: backtest.worker.ts, useBacktestWorker hook, EquityCurveChart, AnnualReturnsChart
 - [ ] 05-06-PLAN.md — Backtest UI: page.tsx, BacktestClient, SetupBar, MetricsStrip, Results, RunSummaryFooter, RunHistoryDrawer
@@ -181,7 +181,7 @@ Plans:
 **Plans**: 7 plans
 Plans:
 
-- [ ] 05-01-PLAN.md — Wave 0 scaffolds: deps, migrations 00009+00010, schema push, types, test stubs, fixtures, quarterly cron entry
+- [x] 05-01-PLAN.md — Wave 0 scaffolds: deps, migrations 00009+00010, schema push, types, test stubs, fixtures, quarterly cron entry
 - [ ] 05-02-PLAN.md — Pure backtest libs (TDD): date-grid, forward-fill, inputs-hash, metrics, simulate (with golden-master)
 - [ ] 05-03-PLAN.md — SNB data path: snb.ts fetch + stitch, cache-snb upsert/read, seed script, /api/cron/refresh-snb
 - [ ] 05-04-PLAN.md — Backtest API routes: POST /api/backtest/data + POST/GET /api/backtest/runs + GET /api/backtest/runs/[id] + Zod schemas
@@ -197,6 +197,6 @@ Plans:
 | 2. App Shell & Design System | 1/3 | In Progress|  |
 | 3. Market Data Pipeline | 10/10 | Complete   | 2026-05-04 |
 | 4. Portfolio Builder | 6/6 | Complete | 2026-05-04 |
-| 5. Backtesting Engine | 1/7 | In Progress|  |
+| 5. Backtesting Engine | 3/7 | In Progress|  |
 | 6. Projections | 0/TBD | Not started | - |
 | 7. Portfolio Comparison | 0/TBD | Not started | - |
